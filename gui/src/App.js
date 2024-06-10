@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import { Route, Link, Routes, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Route, Link, Routes, BrowserRouter, useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import './App.css';
 import './styles.css';
@@ -9,21 +9,24 @@ import Tickets from "./components/Tickets"
 
 function App() {
   return (
-    <div class="main column fill">
-      <header className="row shadow fill">
-        <h1 class="empty">
-          Train Scheduler
-          {/* <Link to="/">
-          Train Scheduler
-          </Link> */}
-        </h1>
-      </header>
-      <section class="center pad-2">
-        <Tickets>
+    <BrowserRouter>
+      <div class="main column fill">
+        <header className="row shadow fill">
+          <h1 class="empty">
+            <Link to="/">
+              Train Scheduler
+            </Link>
+          </h1>
+        </header>
+        <section class="center pad-2">
           
-        </Tickets>
-      </section>
-    </div>
+            <Routes>
+              <Route path="/" element={<Tickets/>}/>
+            </Routes>
+          
+        </section>
+      </div>
+    </BrowserRouter>
   );
 }
 

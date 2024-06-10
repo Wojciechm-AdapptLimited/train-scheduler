@@ -10,15 +10,21 @@ export default function Home({serverUrl}) {
     //     setPageCount(Number(page));
     // }
 
-    useEffect(()=>{
-        setTickets(Array(5).fill(
+    const getTickets = function(){
+        // put request to db here
+
+        return Array(5).fill(
             {   
                 id: 1,
                 stationStart:"Poznań Główny",
                 stationEnd: "Kraków Główny",
                 start: new Date(2024,6,20,7,30),
                 end: new Date(2024,6,20,15,30)
-            }))
+            })
+    }
+
+    useEffect(()=>{
+        setTickets(getTickets())
     },[]);
 
     return(<div class="column tickets">
