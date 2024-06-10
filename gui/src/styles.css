@@ -1,0 +1,81 @@
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header {
+background-color:seagreen;
+padding: 1% ;
+}
+
+footer {
+background-color: seagreen;
+padding: 1%;
+}
+
+body {
+    overflow: hidden;
+}
+section{
+    display: flex;
+    overflow-y: scroll;
+}
+
+.main {
+height: 100vh;
+}
+
+.fill {
+justify-content: space-between;
+}
+
+.column {
+display: flex;
+flex-direction: column;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.empty {
+    flex: 100%;
+}
+
+.border-low {
+    border-bottom: 1px seashell solid;
+}
+
+.padding {
+    padding: 10%;
+}
+
+div.tickets{
+    max-height: 100%;
+}
+
+.max-height{
+    max-height: 100%;
+}
+
+.col-right{
+    padding: 2%;
+    border-right: 1px seashell solid;
+    overflow-x: scroll;
+}
+
+.col-left{
+    padding: 2%;
+    border-left: 1px seashell    solid;
+    overflow-x: scroll;
+}
+
+.pad-2{
+    padding: 2%;
+}
+
+.shadow{
+    box-shadow: 10px 10px 5px silver;
+}
