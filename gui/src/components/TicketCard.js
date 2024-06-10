@@ -1,5 +1,6 @@
 import React from "react";
 import "../styles.css";
+import { Link, BrowserRouter} from 'react-router-dom';
 //import { Link } from 'react-router-dom';
 
 export default function TournCard({ticketObject}) {
@@ -9,6 +10,7 @@ export default function TournCard({ticketObject}) {
             <h2>From: {ticketObject.stationStart} To: {ticketObject.stationEnd}</h2>
             <div>Leaves: {ticketObject.start.toString()}</div>
             <div>Arrives: {ticketObject.end.toString()}</div>
+            <div><Link to={`/train/${ticketObject.id}`}>Locate train</Link></div>
         </div>
     )
 }

@@ -5,6 +5,7 @@ import './App.css';
 import './styles.css';
 
 import Tickets from "./components/Tickets"
+import TrainLocation from "./components/TrainLocation";
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           
             <Routes>
               <Route path="/" element={<Tickets/>}/>
+              <Route path="/train/:id" element={<TrainLocation/>}/>
             </Routes>
           
         </section>
