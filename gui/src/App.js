@@ -6,9 +6,23 @@ import './styles.css';
 
 import Tickets from "./components/Tickets"
 import TrainLocation from "./components/TrainLocation";
+import Login from "./components/Login";
+import UserProfile from "./closures/UserProfile";
 
 
 function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [login, setLogin] = useState("");
+
+  useEffect(()=>{
+    const login = UserProfile.get();
+    if (login != ""){
+      setLoggedIn(true);
+      setLogin(login);
+    }
+  },[loggedIn])
+
+
   return (
     <BrowserRouter>
       <div class="main column fill">
@@ -18,6 +32,8 @@ function App() {
               Train Scheduler
             </Link>
           </h1>
+          <div class="empty"></div>
+          <Login loggedIn={loggedIn} login={login} setLoggedIn={setLoggedIn}></Login>
         </header>
         <section class="center pad-2">
           

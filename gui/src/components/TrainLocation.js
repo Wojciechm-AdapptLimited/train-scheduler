@@ -4,7 +4,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvent, useMap} from 'reac
 import "../styles.css";
 
 export default function TrainLocation(){
-    const [location, setLocation] = useState([52.3246, 18.9967]) //default location
+    const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
+    const [trains, setTrains] = useState([]);
 
     return(<div class="column">
         <MapContainer
