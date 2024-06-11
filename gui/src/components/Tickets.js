@@ -3,7 +3,7 @@ import React,{ useEffect, useState } from "react";
 
 import TicketCard from "./TicketCard";
 
-export default function Home({serverUrl}) {
+export default function Home({serverUrl, loggedIn}) {
     const [tickets, setTickets] = useState([]);
     //console.log("hey "+page);
     // if(page){
@@ -29,7 +29,7 @@ export default function Home({serverUrl}) {
 
     return(<div class="column tickets">
         <ul>
-          {tickets.map(t => <TicketCard ticketObject={t} key={t.id}/>)}
+          {tickets.map(t => <TicketCard ticketObject={t} key={t.id} loggedIn={loggedIn}/>)}
         </ul>
     </div>)
 }

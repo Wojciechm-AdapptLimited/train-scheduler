@@ -79,3 +79,7 @@ div.tickets{
 .shadow{
     box-shadow: 10px 10px 5px silver;
 }
+
+.error {
+    color: red;
+  }

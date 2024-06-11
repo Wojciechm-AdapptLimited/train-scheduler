@@ -38,7 +38,7 @@ function App() {
         <section class="center pad-2">
           
             <Routes>
-              <Route path="/" element={<Tickets/>}/>
+              <Route path="/" element={<Tickets loggedIn={loggedIn}/>}/>
               <Route path="/train/:id" element={<TrainLocation/>}/>
             </Routes>
           
