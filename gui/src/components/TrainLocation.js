@@ -24,19 +24,65 @@ let TrainIcon = L.icon({
 export default function TrainLocation(){
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
+    const [ticketInfo, setTicketInfo] = useState({
+        id: 0,
+        stationStart: "",
+        stationEnd: "",
+        start: new Date(),
+        end: new Date()
+      });
+    const [passangers, setPassangers] = useState([]);
 
-    useEffect(()=>{
-        // get trains from cassandra and display
+    const getTicket = function(){
+        // get ticket info from postgres
+        
+        // current format
+        return({   
+            id: 1,
+            stationStart:"Poznań Główny",
+            stationEnd: "Kraków Główny",
+            start: new Date(2024,6,20,7,30),
+            end: new Date(2024,6,20,15,30),
+        });
+    }
 
-        setTrains([{
+    const getPassangers = function(){
+        // get train passangers info from postgres
+
+        return([{
+            name: "lukasz.andryszewski@student.put.poznan.pl",
+            normal_tickets: 0,
+            reduced_tickets: 1,
+        }])
+    }
+
+    const getTrain = function(){
+        //get train location from cassandra
+        return([{
             id: 1,
             x: 54.3213,
             y: 19.3214,
-        }])
-    },[])
+        }]);
+    }
+
+    useEffect(()=>{
+        
+
+        setTicketInfo(getTicket());
+        setPassangers(getPassangers());
+
+        // get trains from cassandra and display
+
+        setTrains(getTrain());
+    },[ticketInfo])
 
 
     return(<div class="column">
+        <h2>From: {ticketInfo.stationStart}</h2>
+        <div>Leaves: {ticketInfo.start.toString()}</div>
+        <h2>To: {ticketInfo.stationEnd}</h2>
+        <div>Arrives: {ticketInfo.end.toString()}</div>
+        <div>Current Location:</div>
         <MapContainer
             center={location}
             zoom={6}
@@ -54,5 +100,13 @@ export default function TrainLocation(){
             </Marker>)
             }
         </MapContainer>
+        <table>
+            <tr>
+                <th>Passanger</th><th>Seats</th>
+            </tr>
+            {passangers.map(p =><tr>
+                <td>{p.name}</td><td>{Number(p.reduced_tickets) + Number(p.normal_tickets)}</td> 
+            </tr>)}
+        </table>
     </div>)
 }
