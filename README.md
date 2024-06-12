@@ -14,45 +14,72 @@ Using the GUI, user are able to buy normal and reduced tickets for the chosen tr
 ---
 title: train keyspace
 ---
-classDiagram 
-    direction LR
-    class train {
-        id: str (PRIMARY KEY)
-        title: str
-        author: str
-    }
-    
-    class user {
-        login: str (PRIMARY KEY)
-    }
-    
-    class ticket_id {
-        train_id: str (PRIMARY KEY)
-        start_station: str
-        end_station: str
-        start_time: Date
-        end_time: Date
+erDiagram
+    TRAIN {
+        int id PK
+        string name UK
     }
 
-    class reservations{
-        id: str (PRIMARY KEY)
-        train_id: str (SECONDARY KEY)
-        user_login: str
-        normal_tickets: int
-        reduced_tickets: int
+    SEAT {
+        int id PK
+        int train FK
+        int cart
+        int number
     }
+
+    USER {
+        string login PK
+    }
+
+    STATION {
+        int id PK
+        string name UK
+    }
+
+    SCHEDULE {
+        int id PK
+        int station FK
+        int train FK
+        date arrival
+        date departure
+    }
+
+    TICKET {
+        int id PK
+        string user FK
+        boolean reduced
+    }
+
+    RESERVATION {
+        int id PK
+        int seat FK
+        int schedule FK
+        int ticket FK
+    }
+
+    TRAIN ||--o{ SEAT : has
+    SCHEDULE }o--|| TRAIN : for
+    SCHEDULE }o--|| STATION : for
+    RESERVATION }o--|| SEAT : for
+    RESERVATION }o--|| SCHEDULE : for
+    RESERVATION }|--o{ TICKET : has
+    USER ||--o{ TICKET : has
 ```
 
 ## How to run
 
 ### GUI
-The GUI is a website implemented using React. Simply run in the gui folder:
+
+The GUI is a website implemented using React. Simply run:
+
 ```bash
-npm start
+npm run dev
 ```
+
 ### Fake trains
 
 To emulate the trains run:
+
 ```bash
-py src/run_trains.py
+python scripts/run_trains.py
 ```
