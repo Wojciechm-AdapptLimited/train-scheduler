@@ -1,13 +1,14 @@
+import abc
+import math
+import random
 import threading
 import time
-import random
-import math
 
 # import asyncio
 # import websockets
 
 
-class Train(threading.Thread):
+class Train(abc.ABC, threading.Thread):
     def __init__(self, train_id, delay=None, max_delay=4):
         super(Train, self).__init__()
         self.train_id = train_id
@@ -15,33 +16,31 @@ class Train(threading.Thread):
         self._delay = delay
         self.max_delay = max_delay
 
-    def generate_info(self):
+    @abc.abstractmethod
+    def generate_info(self) -> dict[str, float]:
         """
-            Generates informations from sensors
+        Generates informations from sensors
         """
+        pass
 
-        ...
-
-    def send_info(self, info):
+    @abc.abstractmethod
+    def send_info(self, info) -> None:
         """
-            Sends info to database
+        Sends info to database
         """
-        ...
+        pass
 
     @property
-    def delay(self):
-        delay = self._delay
-        if delay is None:
-            delay = random.uniform(0, self.max_delay)
-        return delay
+    def delay(self) -> float:
+        return self._delay or random.uniform(0, self.max_delay)
 
-    def run(self):
+    def start(self) -> None:
         while self.running:
             info = self.generate_info()
             time.sleep(self.delay)
             self.send_info(info)
 
-    def stop(self):
+    def stop(self) -> None:
         self.running = False
 
 
@@ -52,22 +51,21 @@ class TestTrain(Train):
         self.poland_coords = {
             "up-left": [53.8014, 14.9841],
             "down-right": [50.4683, 22.637],
-            "center": [52.3246, 18.9967]
+            "center": [52.3246, 18.9967],
         }
 
     def generate_info(self):
-
         x1, y1 = self.poland_coords["up-left"]
         x2, y2 = self.poland_coords["down-right"]
         xc, yc = self.poland_coords["center"]
 
-        xlen, ylen = abs(x2-x1)/2, abs(y2-y1)/2
+        xlen, ylen = abs(x2 - x1) / 2, abs(y2 - y1) / 2
 
         x, y = math.sin(self.t), math.sin(self.t)
 
         self.t += 1
 
-        return {"x": (x*xlen)+xc, "y": (y*ylen)+yc}
+        return {"x": (x * xlen) + xc, "y": (y * ylen) + yc}
 
     def send_info(self, info):
         print(self.train_id, info)
