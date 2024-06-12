@@ -1,17 +1,16 @@
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
-var UserProfile = (function() {
+var UserProfile = (function () {
     var login = "";
-    const username_variable = 'username';
+    const username_variable = "username";
 
     var clear = function () {
         // Clear cookies and reset values
         Cookies.remove(username_variable);
         login = "";
     };
-    
 
-    var get = function() {
+    var get = function () {
         return login;
     };
 
@@ -22,16 +21,17 @@ var UserProfile = (function() {
         Cookies.set(username_variable, user);
     };
 
-      // Initialize with values from cookies if available
-    if (Cookies.get(username_variable)){
+    // Initialize with values from cookies if available
+    if (Cookies.get(username_variable)) {
         login = Cookies.get(username_variable);
     }
-    
+
     return {
         get: get,
         set: set,
-        clear: clear
+        clear: clear,
     };
 })();
 
 export default UserProfile;
+
