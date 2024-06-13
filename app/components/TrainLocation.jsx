@@ -75,7 +75,7 @@ export default function TrainLocation({serverUrl}) {
     }, []);
 
     return (
-        <div class="column">
+        <div className="column">
             <h2>From: {ticketInfo.stationStart}</h2>
             <div>Leaves: {ticketInfo.start.toString()}</div>
             <h2>To: {ticketInfo.stationEnd}</h2>

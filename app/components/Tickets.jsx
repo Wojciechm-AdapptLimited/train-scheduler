@@ -33,7 +33,7 @@ export default function Home({ serverUrl, loggedIn }) {
     }, []);
 
     return (
-        <div class="column max-height">
+        <div className="column max-height">
             <ul>
                 {tickets.map((t) => (
                     <TicketCard

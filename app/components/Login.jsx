@@ -34,7 +34,7 @@ export default function Login({ loggedIn, login, setLoggedIn }) {
                             })}
                         />
                         {errors.username && (
-                            <p class="error">{errors.username.message}</p>
+                            <p className="error">{errors.username.message}</p>
                         )}
                     </div>
                     <button type="submit">Login</button>

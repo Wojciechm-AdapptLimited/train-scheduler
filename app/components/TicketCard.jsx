@@ -45,9 +45,9 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     };
 
     return (
-        <div class="row border-low padding shadow">
+        <div className="row border-low padding shadow">
             {/* <Link to={}><h1>{}</h1></Link> */}
-            <div class="column">
+            <div className="column">
                 <h2>From: {ticketObject.stationStart}</h2>
                 <div>Leaves: {ticketObject.start.toString()}</div>
                 <h2>To: {ticketObject.stationEnd}</h2>
@@ -84,7 +84,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
 
 
                     {errors.totalTickets && (
-                        <p class="error">{errors.totalTickets.message}</p>
+                        <p className="error">{errors.totalTickets.message}</p>
                     )}
 
                     <button>Buy ticket</button>

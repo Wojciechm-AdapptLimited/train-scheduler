@@ -33,19 +33,19 @@ function App() {
 
     return (
         <BrowserRouter>
-            <div class="main column fill">
+            <div className="main column fill">
                 <header className="row shadow fill">
-                    <h1 class="empty">
+                    <h1 className="empty">
                         <Link to="/">Train Scheduler</Link>
                     </h1>
-                    <div class="empty"></div>
+                    <div className="empty"></div>
                     <Login
                         loggedIn={loggedIn}
                         login={login}
                         setLoggedIn={setLoggedIn}
                     ></Login>
                 </header>
-                <section class="center pad-2">
+                <section className="center pad-2">
                     <Routes>
                         <Route
                             path="/"
