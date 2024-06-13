@@ -3,6 +3,8 @@ import math
 import random
 import threading
 import time
+import cassandra
+import cassandra.cluster
 
 # import asyncio
 # import websockets
@@ -70,10 +72,20 @@ class TestTrain(Train):
     def send_info(self, info):
         print(self.train_id, info)
 
+#
+#server_ip = '127.0.0.'
+#ports = ["9042", '9043', '9044']
+#cluster_ips = [f'{server_ip}:{port}' for port in ports]
 
-# class SocketTrain(TestTrain):
-#     def __init__(self, train_id, delay=None, max_delay=4):
-#         super(SocketTrain, self).__init__(train_id, delay, max_delay)
 
-#     def send_info(self, info):
-#         return super().send_info(info)
+class SocketTrain(TestTrain):
+    def __init__(self, train_id, delay=None, max_delay=4):
+        super(SocketTrain, self).__init__(train_id, delay, max_delay)
+        self.db = cassandra.cluster.Cluster(
+            [f"127.0.0.{i}" for i in range(1, 4)],
+            port=9042)
+        self.session = self.db.connect('train')
+
+    def send_info(self, info):
+        query = f'INSERT INTO trains (train_id, x, y) VALUES ({self.train_id},{info.x},{info.y})'
+        self.session.execute(query)
