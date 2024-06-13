@@ -19,6 +19,7 @@ export default function Home({ serverUrl, loggedIn }) {
             stationEnd: "Kraków Główny",
             start: new Date(2024, 6, 20, 7, 30),
             end: new Date(2024, 6, 20, 15, 30),
+            seats: ["A1","A2","A3","B1","B2","B3"]
         });
     };
 

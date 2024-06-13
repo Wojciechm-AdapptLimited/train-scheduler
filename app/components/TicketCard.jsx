@@ -4,7 +4,7 @@ import { Link, BrowserRouter } from "react-router-dom";
 import { useForm } from "react-hook-form";
 //import { Link } from 'react-router-dom';
 
-export default function TournCard({ ticketObject, loggedIn }) {
+export default function TicketCard({ ticketObject, loggedIn }) {
     const {
         register,
         handleSubmit,
@@ -13,19 +13,21 @@ export default function TournCard({ ticketObject, loggedIn }) {
         watch,
         formState: { errors },
     } = useForm();
-    const normalTickets = watch("normal_tickets", 0);
-    const reducedTickets = watch("reduced_tickets", 0);
+    // const normalTickets = watch("normal_tickets", 0);
+    // const reducedTickets = watch("reduced_tickets", 0);
+
+
 
     const onSubmit = (data) => {
-        const totalTickets =
-            Number(data.normal_tickets) + Number(data.reduced_tickets);
-        if (totalTickets <= 0) {
-            setError("totalTickets", {
-                type: "manual",
-                message: "The sum of tickets must be greater than 0",
-            });
-            return null;
-        }
+        // const totalTickets =
+        //     Number(data.normal_tickets) + Number(data.reduced_tickets);
+        // if (totalTickets <= 0) {
+        //     setError("totalTickets", {
+        //         type: "manual",
+        //         message: "The sum of tickets must be greater than 0",
+        //     });
+        //     return null;
+        // }
 
         data.id = ticketObject.id;
 
@@ -45,9 +47,17 @@ export default function TournCard({ ticketObject, loggedIn }) {
                     <Link to={`/train/${ticketObject.id}`}>Locate train</Link>
                 </div>
             </div>
+            <div >
             {loggedIn && (
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <div>Normal tickets:</div>
+                    <select {...register("seat")}>
+                        {ticketObject.seats.map(s =>
+                            <option>
+                                {s}
+                            </option>
+                        ) }
+                    </select>
+                    {/* <div>Normal tickets:</div>
                     <input
                         type="number"
                         step="1"
@@ -60,7 +70,8 @@ export default function TournCard({ ticketObject, loggedIn }) {
                         step="1"
                         min="0"
                         {...register("reduced_tickets")}
-                    ></input>
+                    ></input> */}
+
 
                     {errors.totalTickets && (
                         <p class="error">{errors.totalTickets.message}</p>
@@ -70,6 +81,7 @@ export default function TournCard({ ticketObject, loggedIn }) {
                 </form>
             )}
             {}
+            </div>
         </div>
     );
 }
