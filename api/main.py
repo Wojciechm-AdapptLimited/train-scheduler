@@ -1,32 +1,78 @@
-import psycopg2
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
+import cassandra
+from datetime import datetime
+import traceback
+import asyncio
+import random
+
+from domain import DummyData
+
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",  # React app URL
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class Context:
     def __enter__(self):
-        self.conn = psycopg2.connect(
-            "dbname=trains user=postgres password=1234 host=localhost port=5432"
-        )
-        return self.conn.cursor()
+        #self.cluster = Cluster(['12'])
+        #self.session = self.cluster.connect()
+        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.commit()
-        self.conn.close()
+        #self.cluster.shutdown()
+        pass
 
 
 @app.get("/")
 async def root():
-    pass
+    return {"Hello": "World"}
 
 
-# @app.get("/schedule")
-def get_schedules():
-    with Context() as cur:
-        cur.execute("SELECT * FROM schedule;")
-        schedules = cur.fetchall()
-    return schedules
+@app.get("/tickets")
+async def get_trains():
+    try:
+        return DummyData.tickets
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
 
 
-print(get_schedules())
+@app.get("/ticket/{ticket_id}")
+async def get_ticket(ticket_id):
+    try:
+        return DummyData.tickets[int(ticket_id)]
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+
+@app.get("/seats/{ticket_id}")
+async def get_seats(ticket_id):
+    try:
+        return DummyData.tickets[int(ticket_id)]["seats"]
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+
+@app.get("/passengers/{ticket_id}")
+async def get_passengers(ticket_id):
+    try:
+        return DummyData.tickets[int(ticket_id)]["passengers"]
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")

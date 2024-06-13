@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import trainIcon from "./train-sign-svgrepo-com.svg";
+import { useParams } from 'react-router-dom';
 
 import "../styles.css";
 
@@ -20,7 +21,7 @@ let TrainIcon = L.icon({
     popupAnchor: [0, -40],
 });
 
-export default function TrainLocation() {
+export default function TrainLocation({serverUrl}) {
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
     const [ticketInfo, setTicketInfo] = useState({
@@ -31,51 +32,47 @@ export default function TrainLocation() {
         end: new Date(),
     });
     const [passangers, setPassangers] = useState([]);
+    const { id } = useParams();
 
     const getTicket = function () {
         // get ticket info from postgres
 
         // current format
-        return {
-            id: 1,
-            stationStart: "Poznań Główny",
-            stationEnd: "Kraków Główny",
-            start: new Date(2024, 6, 20, 7, 30),
-            end: new Date(2024, 6, 20, 15, 30),
-        };
+        fetch(serverUrl+`ticket/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setTicketInfo(data);
+        });
     };
 
     const getPassangers = function () {
         // get train passangers info from postgres
 
-        return [
-            {
-                name: "lukasz.andryszewski@student.put.poznan.pl",
-                normal_tickets: 0,
-                reduced_tickets: 1,
-            },
-        ];
+        fetch(serverUrl+`passengers/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setPassangers(data);
+        });
     };
 
     const getTrain = function () {
         //get train location from cassandra
-        return [
+        setTrains([
             {
                 id: 1,
                 x: 54.3213,
                 y: 19.3214,
             },
-        ];
+        ]);
     };
 
     useEffect(() => {
-        setTicketInfo(getTicket());
-        setPassangers(getPassangers());
-
-        // get trains from cassandra and display
-
-        setTrains(getTrain());
-    }, [ticketInfo]);
+        getTicket();
+        getPassangers();
+        getTrain();
+    }, []);
 
     return (
         <div class="column">
@@ -101,15 +98,14 @@ export default function TrainLocation() {
             </MapContainer>
             <table>
                 <tr>
-                    <th>Passanger</th>
+                    <th>Passengers</th>
                     <th>Seats</th>
                 </tr>
                 {passangers.map((p) => (
                     <tr>
                         <td>{p.name}</td>
                         <td>
-                            {Number(p.reduced_tickets) +
-                                Number(p.normal_tickets)}
+                            {p.seat}
                         </td>
                     </tr>
                 ))}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles.css";
 import { Link, BrowserRouter } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -15,7 +15,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     } = useForm();
     // const normalTickets = watch("normal_tickets", 0);
     // const reducedTickets = watch("reduced_tickets", 0);
-
+    const [boughtSeat, setBoughtSeat] = useState("");
 
 
     const onSubmit = (data) => {
@@ -32,7 +32,16 @@ export default function TicketCard({ ticketObject, loggedIn }) {
         data.id = ticketObject.id;
 
         console.log("Form data:", data);
-        clearErrors("totalTickets");
+
+        setBoughtSeat(data.seat);
+    };
+
+    const update = (data) => {
+        setBoughtSeat("");
+    };
+
+    const cancel = (data) => {
+        setBoughtSeat("");
     };
 
     return (
@@ -48,8 +57,9 @@ export default function TicketCard({ ticketObject, loggedIn }) {
                 </div>
             </div>
             <div >
-            {loggedIn && (
+            {loggedIn && boughtSeat === "" && (
                 <form onSubmit={handleSubmit(onSubmit)}>
+                    <label>Select seat:</label>
                     <select {...register("seat")}>
                         {ticketObject.seats.map(s =>
                             <option>
@@ -80,7 +90,11 @@ export default function TicketCard({ ticketObject, loggedIn }) {
                     <button>Buy ticket</button>
                 </form>
             )}
-            {}
+            {loggedIn && boughtSeat !== "" && <div>
+                <div>Reserved seat: {boughtSeat}</div>
+                <button onClick={update}>Update</button>
+                <button onClick={cancel}>Cancel</button>
+                </div>}
             </div>
         </div>
     );

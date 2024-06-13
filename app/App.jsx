@@ -17,6 +17,8 @@ import TrainLocation from "./components/TrainLocation";
 import Login from "./components/Login";
 import UserProfile from "./closures/UserProfile";
 
+const serverUrl = "http://localhost:8000/";
+
 function App() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [login, setLogin] = useState("");
@@ -47,9 +49,9 @@ function App() {
                     <Routes>
                         <Route
                             path="/"
-                            element={<Tickets loggedIn={loggedIn} />}
+                            element={<Tickets loggedIn={loggedIn} serverUrl={serverUrl}/>}
                         />
-                        <Route path="/train/:id" element={<TrainLocation />} />
+                        <Route path="/train/:id" element={<TrainLocation serverUrl={serverUrl} />} />
                     </Routes>
                 </section>
             </div>
