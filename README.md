@@ -31,38 +31,24 @@ erDiagram
         string login PK
     }
 
-    STATION {
-        int id PK
-        string name UK
-    }
-
     SCHEDULE {
         int id PK
-        int station FK
         int train FK
         date arrival
-        date departure
     }
 
     TICKET {
         int id PK
         string user FK
-        boolean reduced
-    }
-
-    RESERVATION {
-        int id PK
-        int seat FK
         int schedule FK
-        int ticket FK
+        int seat FK
+        boolean reduced
     }
 
     TRAIN ||--o{ SEAT : has
     SCHEDULE }o--|| TRAIN : for
-    SCHEDULE }o--|| STATION : for
-    RESERVATION }o--|| SEAT : for
-    RESERVATION }o--|| SCHEDULE : for
-    RESERVATION }|--o{ TICKET : has
+    TICKET }o--|| SEAT : for
+    TICKET }o--|| SCHEDULE : for
     USER ||--o{ TICKET : has
 ```
 
