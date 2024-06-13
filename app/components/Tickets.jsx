@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 
 import TicketCard from "./TicketCard";
 
-export default function Home({ serverUrl, loggedIn }) {
+import { GET_TICKETS_URL } from "../config";
+
+export default function Home({loggedIn }) {
     const [tickets, setTickets] = useState([]);
     //console.log("hey "+page);
     // if(page){
@@ -12,20 +14,12 @@ export default function Home({ serverUrl, loggedIn }) {
 
     const getTickets = function () {
         // put request to db here
-        fetch(serverUrl+"tickets")
+        fetch(GET_TICKETS_URL)
         .then(response => response.json())
         .then(data => {
             setTickets(data);
             console.log(data);
         });
-        // return Array(5).fill({
-        //     id: 1,
-        //     stationStart: "Poznań Główny",
-        //     stationEnd: "Kraków Główny",
-        //     start: new Date(2024, 6, 20, 7, 30),
-        //     end: new Date(2024, 6, 20, 15, 30),
-        //     seats: ["A1","A2","A3","B1","B2","B3"]
-        // });
     };
 
     useEffect(() => {

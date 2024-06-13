@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles.css";
 import { Link, BrowserRouter } from "react-router-dom";
 import { useForm } from "react-hook-form";
 //import { Link } from 'react-router-dom';
+
+import { GET_SEATS_URL } from "../config";
 
 export default function TicketCard({ ticketObject, loggedIn }) {
     const {
@@ -16,7 +18,21 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     // const normalTickets = watch("normal_tickets", 0);
     // const reducedTickets = watch("reduced_tickets", 0);
     const [boughtSeat, setBoughtSeat] = useState("");
+    const [seats, setSeats] = useState([]);
 
+    useEffect(()=>{
+        getSeats();
+    },[])
+
+    const getSeats = function () {
+        // put request to db here
+        fetch(GET_SEATS_URL + ticketObject.id)
+        .then(response => response.json())
+        .then(data => {
+            setSeats(data);
+            console.log(data);
+        });
+    };
 
     const onSubmit = (data) => {
         // const totalTickets =
@@ -61,7 +77,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <label>Select seat:</label>
                     <select {...register("seat")}>
-                        {ticketObject.seats.map(s =>
+                        {seats.map(s =>
                             <option>
                                 {s}
                             </option>
