@@ -1,4 +1,4 @@
-from objects.Train import TestTrain
+from ..api.domain import TestTrain
 import time
 
 NUM_TRAINS = 10
