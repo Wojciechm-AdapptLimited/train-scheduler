@@ -62,6 +62,14 @@ The GUI is a website implemented using React. Simply run:
 npm run dev
 ```
 
+### API
+
+To run the server api, in the api directory run:
+
+```bash
+uvicorn main:app --reload
+```
+
 ### Fake trains
 
 To emulate the trains run:
