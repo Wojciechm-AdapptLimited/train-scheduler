@@ -9,6 +9,7 @@ import asyncio
 import random
 
 from domain import DummyData
+from domain.Post import ReserveRequest
 
 
 app = FastAPI()
@@ -61,7 +62,7 @@ async def get_ticket(ticket_id):
 
 
 @app.get("/seats/{ticket_id}")
-async def get_seats(ticket_id):
+async def get_seats(ticket_id:str):
     try:
         return DummyData.tickets[int(ticket_id)]["seats"]
     except Exception:
@@ -70,9 +71,28 @@ async def get_seats(ticket_id):
 
 
 @app.get("/passengers/{ticket_id}")
-async def get_passengers(ticket_id):
+async def get_passengers(ticket_id: str):
     try:
         return DummyData.tickets[int(ticket_id)]["passengers"]
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+@app.post("/login")
+async def login(data):
+    try:
+        return data
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+
+@app.post("/reserve")
+async def reserve(data: ReserveRequest):
+    try:
+        DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
+        DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
+        return data
     except Exception:
         print(traceback.format_exc())
         raise HTTPException(500, "Internal Server Error")

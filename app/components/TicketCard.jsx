@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 //import { Link } from 'react-router-dom';
 
 import { GET_SEATS_URL } from "../config";
+import UserProfile from "../closures/UserProfile";
+import { SERVER_URL } from "../config";
 
 export default function TicketCard({ ticketObject, loggedIn }) {
     const {
@@ -45,11 +47,24 @@ export default function TicketCard({ ticketObject, loggedIn }) {
         //     return null;
         // }
 
-        data.id = ticketObject.id;
-
+        data.train_id = String(ticketObject.id);
+        const login = UserProfile.get();
+        data.user_id = login
+        
         console.log("Form data:", data);
 
-        setBoughtSeat(data.seat);
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        };
+
+        fetch(SERVER_URL+"reserve",requestOptions)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            setBoughtSeat(data.seat);
+        })
     };
 
     const update = (data) => {
