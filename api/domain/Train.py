@@ -5,9 +5,6 @@ import threading
 import time
 import requests
 
-# import asyncio
-# import websockets
-
 
 class Train(abc.ABC, threading.Thread):
     def __init__(self, train_id, delay=None, max_delay=4, repeats=None):
@@ -23,7 +20,7 @@ class Train(abc.ABC, threading.Thread):
         return self.repeats is None
 
     @abc.abstractmethod
-    def generate_info(self) -> dict[str, float]:
+    def generate_info(self) -> tuple[float, float]:
         """
         Generates informations from sensors
         """
@@ -79,15 +76,15 @@ class PositionTrain(Train):
 
         self.t += 1
 
-        return {"x": (x * xlen) + xc, "y": (y * ylen) + yc}
+        return (x * xlen) + xc, (y * ylen) + yc
 
     def send_info(self, info):
         print(self.train_id, info)
 
 #
-#server_ip = '127.0.0.'
-#ports = ["9042", '9043', '9044']
-#cluster_ips = [f'{server_ip}:{port}' for port in ports]
+# server_ip = '127.0.0.'
+# ports = ["9042", '9043', '9044']
+# cluster_ips = [f'{server_ip}:{port}' for port in ports]
 
 
 class RequestTrain(PositionTrain):
