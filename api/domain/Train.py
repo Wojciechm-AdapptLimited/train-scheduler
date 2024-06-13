@@ -6,20 +6,18 @@ import time
 import cassandra
 import cassandra.cluster
 
-# import asyncio
-# import websockets
-
 
 class Train(abc.ABC, threading.Thread):
-    def __init__(self, train_id, delay=None, max_delay=4):
+    def __init__(self, train_id: int, name: str, delay=None, max_delay=4):
         super(Train, self).__init__()
         self.train_id = train_id
+        self.name = name
         self.running = True
         self._delay = delay
         self.max_delay = max_delay
 
     @abc.abstractmethod
-    def generate_info(self) -> dict[str, float]:
+    def generate_info(self) -> tuple[float, float]:
         """
         Generates informations from sensors
         """
@@ -47,8 +45,8 @@ class Train(abc.ABC, threading.Thread):
 
 
 class TestTrain(Train):
-    def __init__(self, train_id, delay=None, max_delay=4):
-        super(TestTrain, self).__init__(train_id, delay, max_delay)
+    def __init__(self, train_id: int, name: str, delay=None, max_delay=4):
+        super(TestTrain, self).__init__(train_id, name, delay, max_delay)
         self.t = 0
         self.poland_coords = {
             "up-left": [53.8014, 14.9841],
@@ -67,7 +65,7 @@ class TestTrain(Train):
 
         self.t += 1
 
-        return {"x": (x * xlen) + xc, "y": (y * ylen) + yc}
+        return (x * xlen) + xc, (y * ylen) + yc
 
     def send_info(self, info):
         print(self.train_id, info)
