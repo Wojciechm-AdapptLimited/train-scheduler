@@ -8,7 +8,13 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "^0.111.0"
+<<<<<<< HEAD
 numpy = "^1.26.4"
+||||||| parent of 03bfb90 (feat(api) add db seeding for cassandra)
+psycopg2-binary = "^2.9.9"
+=======
+cassandra-driver = "^3.29.1"
+>>>>>>> 03bfb90 (feat(api) add db seeding for cassandra)
 
 
 [build-system]
