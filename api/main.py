@@ -9,7 +9,7 @@ import asyncio
 import random
 
 from domain import DummyData
-from domain.Post import ReserveRequest
+from domain.Post import ReserveRequest,ReserveUpdateRequest
 
 
 app = FastAPI()
@@ -96,9 +96,24 @@ async def login(data):
         print(traceback.format_exc())
         raise HTTPException(500, "Internal Server Error")
 
+@app.post("/reservation/create")
+async def reserve(data: ReserveRequest):
+    try:
+        DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
+        DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
+        response = {
+            "reservation_id":DummyData.reservations,
+            "seat":data.seat,
+        }
+        DummyData.reservations += 1
+        return response
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
 
 @app.post("/reservation/update")
-async def reserve(data: ReserveRequest):
+async def update_reservation(data: ReserveUpdateRequest):
     try:
         DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
         DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})

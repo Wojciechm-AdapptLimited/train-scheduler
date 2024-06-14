@@ -23,6 +23,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     const [reservationId, setReservationId] = useState("");
     const [message, setMessage] = useState("");
     const [seats, setSeats] = useState([]);
+    const [updating, setUpdating] = useState(false);
 
     useEffect(()=>{
         getSeats();
@@ -55,20 +56,12 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     }
 
     const onSubmit = (data) => {
-        // const totalTickets =
-        //     Number(data.normal_tickets) + Number(data.reduced_tickets);
-        // if (totalTickets <= 0) {
-        //     setError("totalTickets", {
-        //         type: "manual",
-        //         message: "The sum of tickets must be greater than 0",
-        //     });
-        //     return null;
-        // }
-
         data.train_id = String(ticketObject.id);
         const login = UserProfile.get();
         data.user_id = login
-        
+        if(updating){
+            data.reservation_id = String(reservationId);
+        }
         console.log("Form data:", data);
 
         const requestOptions = {
@@ -77,7 +70,9 @@ export default function TicketCard({ ticketObject, loggedIn }) {
             body: JSON.stringify(data)
         };
 
-        fetch(SERVER_URL+"reservation/update",requestOptions)
+        const endpoint = updating?"update":"create";
+
+        fetch(SERVER_URL+"reservation/"+endpoint,requestOptions)
         .then(response => {
             if(!response.ok) throw new Error(response.status);
             else return response.json();
@@ -96,6 +91,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     };
 
     const update = (data) => {
+        setUpdating(true);
         setBoughtSeat("");
     };
 
