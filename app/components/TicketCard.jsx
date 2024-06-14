@@ -20,6 +20,8 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     // const normalTickets = watch("normal_tickets", 0);
     // const reducedTickets = watch("reduced_tickets", 0);
     const [boughtSeat, setBoughtSeat] = useState("");
+    const [reservationId, setReservationId] = useState("");
+    const [message, setMessage] = useState("");
     const [seats, setSeats] = useState([]);
 
     useEffect(()=>{
@@ -47,7 +49,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
             const login = UserProfile.get();
             const seat = data.find((p) => p.name === login);
             if (seat){
-            setBoughtSeat(seat);
+                setBoughtSeat(seat);
             }
         });
     }
@@ -76,10 +78,20 @@ export default function TicketCard({ ticketObject, loggedIn }) {
         };
 
         fetch(SERVER_URL+"reservation/update",requestOptions)
-        .then(response => response.json())
+        .then(response => {
+            if(!response.ok) throw new Error(response.status);
+            else return response.json();
+        })
         .then(data => {
             console.log(data)
             setBoughtSeat(data.seat);
+            setReservationId(data.reservation_id);
+            setMessage("Success");
+        })
+        .catch((error) =>{
+            console.log(error);
+            setMessage("Failed");
+            this.setState({requestFailed:true});
         })
     };
 
@@ -88,7 +100,24 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     };
 
     const cancel = (data) => {
-        setBoughtSeat("");
+        const requestOptions = {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        };
+        fetch(SERVER_URL+`reservation/cancel/${reservationId}`,requestOptions)
+        .then(response => {
+            if(!response.ok) throw new Error(response.status);
+            else return response.json();
+        })
+        .then(data => {
+            setBoughtSeat("");
+            setMessage("Cancelled");
+        })
+        .catch((error) =>{
+            console.log(error);
+            setMessage("Cancellation Fail");
+            this.setState({requestFailed:true});
+        })
     };
 
     return (
@@ -142,6 +171,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
                 <button onClick={update}>Update</button>
                 <button onClick={cancel}>Cancel</button>
                 </div>}
+            <div>{message}</div>
             </div>
         </div>
     );

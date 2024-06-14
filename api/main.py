@@ -102,13 +102,18 @@ async def reserve(data: ReserveRequest):
     try:
         DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
         DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
-        return data
+        response = {
+            "reservation_id":DummyData.reservations,
+            "seat":data.seat,
+        }
+        DummyData.reservations += 1
+        return response
     except Exception:
         print(traceback.format_exc())
         raise HTTPException(500, "Internal Server Error")
 
 
-@app.delete("/reservation/cancel/:reservation_id")
+@app.delete("/reservation/cancel/{reservation_id}")
 async def delete_reservation(reservation_id: str):
     try:
         return reservation_id
