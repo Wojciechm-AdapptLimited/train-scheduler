@@ -43,7 +43,7 @@ erDiagram
     TRAIN ||--o{ SEAT : has
     TICKET }o--|| SEAT : for
     TICKET }o--|| TRAIN : for
-    USER ||--o{ TICKET : has
+    PASSANGER ||--o{ TICKET : has
 ```
 
 ## How to run
