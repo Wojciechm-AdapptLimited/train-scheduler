@@ -2,7 +2,7 @@
 
 Repo for Big Data and Distributed Systems project.
 
-The project is done with Cassandra and Postgres. The topic is a Train scheduler.
+The project is done with Cassandra. The topic is a Train scheduler.
 
 The trains periodically send their location and other sensor information to the database.
 
@@ -17,38 +17,32 @@ title: train keyspace
 erDiagram
     TRAIN {
         int id PK
-        string name UK
+        datetime arrival
+        datetime departure
+        string from
+        string to
     }
 
     SEAT {
-        int id PK
-        int train FK
-        int cart
-        int number
+        int train PK
+        string seat PK
+        boolean occupied
     }
 
-    USER {
+    PASSANGER {
         string login PK
     }
 
-    SCHEDULE {
-        int id PK
-        int train FK
-        date arrival
-    }
-
     TICKET {
-        int id PK
-        string user FK
-        int schedule FK
-        int seat FK
-        boolean reduced
+        string login PK
+        uuid id PK
+        int train FK
+        string seat FK
     }
 
     TRAIN ||--o{ SEAT : has
-    SCHEDULE }o--|| TRAIN : for
     TICKET }o--|| SEAT : for
-    TICKET }o--|| SCHEDULE : for
+    TICKET }o--|| TRAIN : for
     USER ||--o{ TICKET : has
 ```
 
