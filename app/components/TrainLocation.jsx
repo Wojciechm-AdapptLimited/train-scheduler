@@ -7,6 +7,8 @@ import { useParams } from 'react-router-dom';
 
 import "../styles.css";
 
+import { SERVER_URL } from "../config";
+
 let DefaultIcon = L.icon({
     iconUrl: icon,
     iconSize: [25, 41], // size of the icon
@@ -21,7 +23,7 @@ let TrainIcon = L.icon({
     popupAnchor: [0, -40],
 });
 
-export default function TrainLocation({serverUrl}) {
+export default function TrainLocation() {
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
     const [ticketInfo, setTicketInfo] = useState({
@@ -38,10 +40,10 @@ export default function TrainLocation({serverUrl}) {
         // get ticket info from postgres
 
         // current format
-        fetch(serverUrl+`ticket/${id}`)
+        fetch(SERVER_URL+`ticket/${id}`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            console.log("Ticket data "+data);
             setTicketInfo(data);
         });
     };
@@ -49,23 +51,31 @@ export default function TrainLocation({serverUrl}) {
     const getPassangers = function () {
         // get train passangers info from postgres
 
-        fetch(serverUrl+`passengers/${id}`)
+        fetch(SERVER_URL+`passengers/${id}`)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            console.log("Passangers data "+data);
             setPassangers(data);
         });
     };
 
     const getTrain = function () {
         //get train location from cassandra
-        setTrains([
-            {
-                id: 1,
-                x: 54.3213,
-                y: 19.3214,
-            },
-        ]);
+
+        fetch(SERVER_URL+`train/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Train data "+data);
+            setTrains(data);
+        })
+
+        // setTrains([
+        //     {
+        //         id: 1,
+        //         x: 54.3213,
+        //         y: 19.3214,
+        //     },
+        // ]);
     };
 
     useEffect(() => {
@@ -92,7 +102,7 @@ export default function TrainLocation({serverUrl}) {
                 />
                 {trains.map((t) => (
                     <Marker icon={TrainIcon} position={[t.x, t.y]}>
-                        <Popup>Train: {t.id}</Popup>
+                        <Popup>Train: {id}</Popup>
                     </Marker>
                 ))}
             </MapContainer>

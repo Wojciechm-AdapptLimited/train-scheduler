@@ -24,6 +24,9 @@ export default function TicketCard({ ticketObject, loggedIn }) {
 
     useEffect(()=>{
         getSeats();
+        if (loggedIn){
+            getReservedSeat();
+        }
     },[])
 
     const getSeats = function () {
@@ -35,6 +38,19 @@ export default function TicketCard({ ticketObject, loggedIn }) {
             console.log(data);
         });
     };
+
+    const getReservedSeat = function(){
+        fetch(SERVER_URL+`passengers/${ticketObject.id}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Passangers data "+data);
+            const login = UserProfile.get();
+            const seat = data.find((p) => p.name === login);
+            if (seat){
+            setBoughtSeat(seat);
+            }
+        });
+    }
 
     const onSubmit = (data) => {
         // const totalTickets =
@@ -59,7 +75,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
             body: JSON.stringify(data)
         };
 
-        fetch(SERVER_URL+"reserve",requestOptions)
+        fetch(SERVER_URL+"reservation/update",requestOptions)
         .then(response => response.json())
         .then(data => {
             console.log(data)

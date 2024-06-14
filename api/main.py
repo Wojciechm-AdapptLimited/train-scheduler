@@ -61,8 +61,17 @@ async def get_ticket(ticket_id):
         raise HTTPException(500, "Internal Server Error")
 
 
+@app.get("/train/{train_id}")
+async def get_train(train_id):
+    try:
+        return [DummyData.trains[int(train_id)]]
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+
 @app.get("/seats/{ticket_id}")
-async def get_seats(ticket_id:str):
+async def get_seats(ticket_id: str):
     try:
         return DummyData.tickets[int(ticket_id)]["seats"]
     except Exception:
@@ -78,6 +87,7 @@ async def get_passengers(ticket_id: str):
         print(traceback.format_exc())
         raise HTTPException(500, "Internal Server Error")
 
+
 @app.post("/login")
 async def login(data):
     try:
@@ -87,12 +97,21 @@ async def login(data):
         raise HTTPException(500, "Internal Server Error")
 
 
-@app.post("/reserve")
+@app.post("/reservation/update")
 async def reserve(data: ReserveRequest):
     try:
         DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
         DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
         return data
+    except Exception:
+        print(traceback.format_exc())
+        raise HTTPException(500, "Internal Server Error")
+
+
+@app.delete("/reservation/cancel/:reservation_id")
+async def delete_reservation(reservation_id: str):
+    try:
+        return reservation_id
     except Exception:
         print(traceback.format_exc())
         raise HTTPException(500, "Internal Server Error")
