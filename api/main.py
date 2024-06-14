@@ -1,18 +1,22 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
-import cassandra
 from datetime import datetime
-import traceback
-import asyncio
-import random
 
-from domain import DummyData
-from domain.Post import ReserveRequest,ReserveUpdateRequest
+from cassandra.cqlengine import connection
+from cassandra.util import uuid_from_time
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from api.domain import Passenger, Seat, Ticket, Train
+from api.requests import ReserveRequest
+from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse
 
 app = FastAPI()
+auth = OAuth2PasswordBearer(tokenUrl="login")
+connection.setup(
+    hosts=["127.0.0.1"],
+    default_keyspace="ttms",
+    consistency=connection.ConsistencyLevel.QUORUM,
+)
 
 origins = [
     "http://localhost:5173",  # React app URL
@@ -27,111 +31,112 @@ app.add_middleware(
 )
 
 
-class Context:
-    def __enter__(self):
-        #self.cluster = Cluster(['12'])
-        #self.session = self.cluster.connect()
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        #self.cluster.shutdown()
-        pass
-
-
 @app.get("/")
 async def root():
-    return {"Hello": "World"}
-
-
-@app.get("/tickets")
-async def get_trains():
-    try:
-        return DummyData.tickets
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
-
-
-@app.get("/ticket/{ticket_id}")
-async def get_ticket(ticket_id):
-    try:
-        return DummyData.tickets[int(ticket_id)]
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
-
-
-@app.get("/train/{train_id}")
-async def get_train(train_id):
-    try:
-        return [DummyData.trains[int(train_id)]]
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
-
-
-@app.get("/seats/{ticket_id}")
-async def get_seats(ticket_id: str):
-    try:
-        return DummyData.tickets[int(ticket_id)]["seats"]
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
-
-
-@app.get("/passengers/{ticket_id}")
-async def get_passengers(ticket_id: str):
-    try:
-        return DummyData.tickets[int(ticket_id)]["passengers"]
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
+    return "OK"
 
 
 @app.post("/login")
-async def login(data):
+async def login(data: OAuth2PasswordRequestForm = Depends()):
+    if data.username != "admin":
+        try:
+            Passenger.objects.filter(login=data.username).get()
+        except Passenger.DoesNotExist:
+            raise HTTPException(400, "Invalid credentials")
+    return {"access_token": data.username, "token_type": "bearer"}
+
+
+@app.get("/train")
+async def get_trains() -> list[TrainResponse]:
+    return [TrainResponse.from_domain(train) for train in Train.objects.all()]
+
+
+@app.get("/train/{train_id}")
+async def get_train(train_id: int) -> TrainDetailedResponse:
     try:
-        return data
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
+        train = Train.objects.filter(id=train_id).get()
+    except Train.DoesNotExist:
+        raise HTTPException(404, "Train not found")
 
-@app.post("/reservation/create")
-async def reserve(data: ReserveRequest):
+    seats = Seat.objects.filter(train=train_id).all()
+    return TrainDetailedResponse.from_domain(train, seats)
+
+
+@app.get("/ticket")
+async def get_tickets(login: str = Depends(auth)) -> list[TicketResponse]:
+    if login == "admin":
+        tickets = Ticket.objects.all()
+    else:
+        tickets = Ticket.objects.filter(login=login).all()
+    return [TicketResponse.from_domain(ticket) for ticket in tickets]
+
+
+@app.post("/ticket")
+async def create_ticket(
+    data: ReserveRequest, login: str = Depends(auth)
+) -> TicketResponse:
     try:
-        DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
-        DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
-        response = {
-            "reservation_id":DummyData.reservations,
-            "seat":data.seat,
-        }
-        DummyData.reservations += 1
-        return response
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
+        seat = Seat.objects.filter(train=data.train_id, seat=data.seat).get()
+    except Seat.DoesNotExist:
+        raise HTTPException(404, "Seat not found")
+
+    if seat.occupied:
+        raise HTTPException(400, "Seat already occupied")
+
+    seat.update(occupied=True)
+    ticket = Ticket.create(
+        login=login,
+        id=uuid_from_time(datetime.now()),
+        train=data.train_id,
+        seat=data.seat,
+    )
+
+    return TicketResponse.from_domain(ticket)
 
 
-@app.post("/reservation/update")
-async def update_reservation(data: ReserveUpdateRequest):
+@app.get("/ticket/{ticket_id}")
+async def get_ticket(ticket_id: str, login: str = Depends(auth)) -> TicketResponse:
     try:
-        DummyData.tickets[int(data.train_id)]["seats"].remove(data.seat)
-        DummyData.tickets[int(data.train_id)]["passengers"].append({"name":data.user_id,"seat":data.seat})
-        response = {
-            "reservation_id":DummyData.reservations,
-            "seat":data.seat,
-        }
-        DummyData.reservations += 1
-        return response
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
+        return TicketResponse.from_domain(
+            Ticket.objects.filter(login=login, id=ticket_id).get()
+        )
+    except Ticket.DoesNotExist:
+        raise HTTPException(404, "Ticket not found")
 
 
-@app.delete("/reservation/cancel/{reservation_id}")
-async def delete_reservation(reservation_id: str):
+@app.put("/ticket/{ticket_id}")
+async def update_ticket(
+    ticket_id: str, data: ReserveRequest, login=Depends(auth)
+) -> TicketResponse:
     try:
-        return reservation_id
-    except Exception:
-        print(traceback.format_exc())
-        raise HTTPException(500, "Internal Server Error")
+        ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
+    except Ticket.DoesNotExist:
+        raise HTTPException(404, "Ticket not found")
+    if ticket.train != data.train_id:
+        raise HTTPException(400, "Train cannot be changed")
+
+    try:
+        seat = Seat.objects.filter(train=data.train_id, seat=data.seat).get()
+    except Seat.DoesNotExist:
+        raise HTTPException(404, "Seat not found")
+    if seat.occupied:
+        raise HTTPException(400, "Seat already occupied")
+
+    Seat.objects.filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    seat.update(occupied=True)
+    ticket.update(train=data.train_id, seat=data.seat)
+
+    return TicketResponse.from_domain(ticket)
+
+
+@app.delete("/ticket/{ticket_id}")
+async def delete_ticket(ticket_id: str, login=Depends(auth)):
+    try:
+        ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
+    except Ticket.DoesNotExist:
+        raise HTTPException(404, "Ticket not found")
+
+    Seat.objects.filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    ticket.delete()
+
+    return ticket_id
