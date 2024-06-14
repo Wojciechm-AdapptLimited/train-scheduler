@@ -10,11 +10,10 @@ NUM_TRAINS = 10
 
 
 class Train(abc.ABC, threading.Thread):
-    def __init__(self, train_id, delay=None, max_delay=4, repeats=None):
+    def __init__(self, train_id, max_delay=4, repeats=None):
         super(Train, self).__init__()
         self.train_id = train_id
-        self.running = True
-        self._delay = delay
+        self.running = False
         self.max_delay = max_delay
         self.repeats = repeats
 
@@ -34,7 +33,7 @@ class Train(abc.ABC, threading.Thread):
 
     @property
     def delay(self) -> float:
-        return self._delay or random.uniform(0, self.max_delay)
+        return random.uniform(0, self.max_delay)
 
     def train_iter(self) -> None:
         info = self.generate_info()
@@ -52,8 +51,8 @@ class Train(abc.ABC, threading.Thread):
 
 
 class PositionTrain(Train):
-    def __init__(self, train_id, delay=None, max_delay=4, repeats=None):
-        super(PositionTrain, self).__init__(train_id, delay, max_delay, repeats)
+    def __init__(self, train_id, max_delay=4, repeats=None):
+        super(PositionTrain, self).__init__(train_id, max_delay, repeats)
         self.t = 0
         self.poland_coords = {
             "up-left": [53.8014, 14.9841],
@@ -79,8 +78,8 @@ class PositionTrain(Train):
 
 
 class RequestTrain(PositionTrain):
-    def __init__(self, train_id, delay=None, max_delay=4, repeats=None):
-        super(RequestTrain, self).__init__(train_id, delay, max_delay, repeats)
+    def __init__(self, train_id, max_delay=4, repeats=None):
+        super(RequestTrain, self).__init__(train_id, max_delay, repeats)
         self.url = "127.0.0.1/"
 
     def send_info(self, info):
