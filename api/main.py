@@ -8,7 +8,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from api.domain import Passenger, Seat, Ticket, Train
 from api.requests import ReserveRequest
-from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse
+from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse, SeatDetailedResponse
+
+from typing import Annotated
 
 app = FastAPI()
 auth = OAuth2PasswordBearer(tokenUrl="login")
@@ -37,13 +39,28 @@ async def root():
 
 
 @app.post("/login")
-async def login(data: OAuth2PasswordRequestForm = Depends()):
-    if data.username != "admin":
-        try:
-            Passenger.objects.filter(login=data.username).get()
-        except Passenger.DoesNotExist:
-            raise HTTPException(400, "Invalid credentials")
-    return {"access_token": data.username, "token_type": "bearer"}
+async def login(login: Annotated[str, Depends(auth)]):
+    if login != "admin":
+        n = Passenger.objects.filter(login=login).count()
+        if n <= 0:# if no account, register
+            Passenger.create(login=login)
+            #raise HTTPException(400, "Invalid credentials")
+    return {"access_token": login, "token_type": "bearer"}
+
+
+@app.get("/seat")
+async def get_seats() -> list[SeatDetailedResponse]:
+    return [SeatDetailedResponse.from_domain(seat) for seat in Seat.objects.all()]
+
+
+@app.get("/seat/{train_id}")
+async def get_seats_pef_train(train_id: int) -> list[SeatDetailedResponse]:
+    try:
+        seats = Seat.objects.filter(train=train_id).all()
+    except Seat.DoesNotExist:
+        raise HTTPException(404, "Seats not found")
+
+    return [SeatDetailedResponse.from_domain(seat) for seat in seats]
 
 
 @app.get("/train")

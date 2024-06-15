@@ -29,6 +29,17 @@ class SeatResponse(BaseModel):
     seat: str
     occupied: bool
 
+class SeatDetailedResponse(SeatResponse):
+    train: int
+
+    @classmethod
+    def from_domain(cls, seat: Seat) -> "SeatDetailedResponse":
+        return cls(
+            seat=seat.seat,
+            occupied=seat.occupied,
+            train=seat.train
+        )
+
 
 class TrainDetailedResponse(TrainResponse):
     seats: list[SeatResponse]

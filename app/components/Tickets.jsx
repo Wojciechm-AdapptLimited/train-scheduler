@@ -3,27 +3,22 @@ import React, { useEffect, useState } from "react";
 
 import TicketCard from "./TicketCard";
 
-import { GET_TICKETS_URL } from "../config";
+import { TRAIN_URL } from "../config";
 
 export default function Home({loggedIn }) {
     const [tickets, setTickets] = useState([]);
-    //console.log("hey "+page);
-    // if(page){
-    //     setPageCount(Number(page));
-    // }
 
-    const getTickets = function () {
-        // put request to db here
-        fetch(GET_TICKETS_URL)
+    const getTrains = function () {
+        fetch(TRAIN_URL)
         .then(response => response.json())
         .then(data => {
-            setTickets(data);
             console.log(data);
+            setTickets(data);
         });
     };
 
     useEffect(() => {
-        getTickets();
+        getTrains();
     }, []);
 
     return (
@@ -31,7 +26,7 @@ export default function Home({loggedIn }) {
             <ul>
                 {tickets.map((t) => (
                     <TicketCard
-                        ticketObject={t}
+                        trainObject={t}
                         key={t.id}
                         loggedIn={loggedIn}
                     />

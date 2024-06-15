@@ -4,11 +4,10 @@ import { Link, BrowserRouter } from "react-router-dom";
 import { useForm } from "react-hook-form";
 //import { Link } from 'react-router-dom';
 
-import { GET_SEATS_URL } from "../config";
 import UserProfile from "../closures/UserProfile";
-import { SERVER_URL } from "../config";
+import { SEAT_URL } from "../config";
 
-export default function TicketCard({ ticketObject, loggedIn }) {
+export default function TicketCard({ ticketObject: trainObject, loggedIn }) {
     const {
         register,
         handleSubmit,
@@ -26,24 +25,24 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     const [updating, setUpdating] = useState(false);
 
     useEffect(()=>{
-        getSeats();
-        if (loggedIn){
-            getReservedSeat();
-        }
+            getSeats();
+        // if (loggedIn){
+        //     getReservedSeat();
+        // }
     },[])
 
     const getSeats = function () {
         // put request to db here
-        fetch(GET_SEATS_URL + ticketObject.id)
+        fetch(SEAT_URL + trainObject.id)
         .then(response => response.json())
         .then(data => {
-            setSeats(data);
             console.log(data);
+                setSeats(data);
         });
     };
 
     const getReservedSeat = function(){
-        fetch(SERVER_URL+`passengers/${ticketObject.id}`)
+        fetch(SERVER_URL+`passengers/${trainObject.id}`)
         .then(response => response.json())
         .then(data => {
             console.log("Passangers data "+data);
@@ -56,7 +55,7 @@ export default function TicketCard({ ticketObject, loggedIn }) {
     }
 
     const onSubmit = (data) => {
-        data.train_id = String(ticketObject.id);
+        data.train_id = String(trainObject.id);
         const login = UserProfile.get();
         data.user_id = login
         if(updating){
@@ -120,12 +119,12 @@ export default function TicketCard({ ticketObject, loggedIn }) {
         <div className="row border-low padding shadow">
             {/* <Link to={}><h1>{}</h1></Link> */}
             <div className="column">
-                <h2>From: {ticketObject.stationStart}</h2>
-                <div>Leaves: {ticketObject.start.toString()}</div>
-                <h2>To: {ticketObject.stationEnd}</h2>
-                <div>Arrives: {ticketObject.end.toString()}</div>
+                <h2>From: {trainObject.from_station}</h2>
+                <div>Leaves: {trainObject.departure.toString()}</div>
+                <h2>To: {trainObject.to_station}</h2>
+                <div>Arrives: {trainObject.arrival.toString()}</div>
                 <div>
-                    <Link to={`/train/${ticketObject.id}`}>Locate train</Link>
+                    <Link to={`/train/${trainObject.id}`}>Locate train</Link>
                 </div>
             </div>
             <div >
@@ -135,29 +134,10 @@ export default function TicketCard({ ticketObject, loggedIn }) {
                     <select {...register("seat")}>
                         {seats.map(s =>
                             <option>
-                                {s}
+                                {s.seat}
                             </option>
                         ) }
                     </select>
-                    {/* <div>Normal tickets:</div>
-                    <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        {...register("normal_tickets")}
-                    />
-                    <div>Reduced tickets:</div>
-                    <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        {...register("reduced_tickets")}
-                    ></input> */}
-
-
-                    {errors.totalTickets && (
-                        <p className="error">{errors.totalTickets.message}</p>
-                    )}
 
                     <button>Buy ticket</button>
                 </form>

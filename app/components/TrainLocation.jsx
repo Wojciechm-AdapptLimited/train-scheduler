@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 
 import "../styles.css";
 
-import { SERVER_URL } from "../config";
+import { SERVER_URL,TICKET_URL,TRAIN_URL } from "../config";
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -26,47 +26,35 @@ let TrainIcon = L.icon({
 export default function TrainLocation() {
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
-    const [ticketInfo, setTicketInfo] = useState({
+    const [trainInfo, setTrainInfo] = useState({
         id: 0,
-        stationStart: "",
-        stationEnd: "",
-        start: new Date(),
-        end: new Date(),
+        from_station: "",
+        to_station: "",
+        departure: new Date(),
+        arrival: new Date(),
     });
-    const [passangers, setPassangers] = useState([]);
+    const [tickets, setTickets] = useState([]);
     const { id } = useParams();
 
-    const getTicket = function () {
-        // get ticket info from postgres
-
+    const getTickets = function () {
         // current format
-        fetch(SERVER_URL+`ticket/${id}`)
+        fetch(TICKET_URL)
         .then(response => response.json())
         .then(data => {
+            data = data.filter(t => {t.train === id})
             console.log("Ticket data "+data);
-            setTicketInfo(data);
-        });
-    };
-
-    const getPassangers = function () {
-        // get train passangers info from postgres
-
-        fetch(SERVER_URL+`passengers/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Passangers data "+data);
-            setPassangers(data);
+            setTickets(data);
         });
     };
 
     const getTrain = function () {
         //get train location from cassandra
 
-        fetch(SERVER_URL+`train/${id}`)
+        fetch(TRAIN_URL+id)
         .then(response => response.json())
         .then(data => {
             console.log("Train data "+data);
-            setTrains(data);
+            setTrainInfo(data);
         })
 
         // setTrains([
@@ -79,17 +67,17 @@ export default function TrainLocation() {
     };
 
     useEffect(() => {
-        getTicket();
-        getPassangers();
+        //getTicket();
+        //getPassangers();
         getTrain();
     }, []);
 
     return (
         <div className="column">
-            <h2>From: {ticketInfo.stationStart}</h2>
-            <div>Leaves: {ticketInfo.start.toString()}</div>
-            <h2>To: {ticketInfo.stationEnd}</h2>
-            <div>Arrives: {ticketInfo.end.toString()}</div>
+            <h2>From: {trainInfo.from_station}</h2>
+            <div>Leaves: {trainInfo.departure.toString()}</div>
+            <h2>To: {trainInfo.to_station}</h2>
+            <div>Arrives: {trainInfo.arrival.toString()}</div>
             <div>Current Location:</div>
             <MapContainer
                 center={location}
@@ -111,11 +99,11 @@ export default function TrainLocation() {
                     <th>Passengers</th>
                     <th>Seats</th>
                 </tr>
-                {passangers.map((p) => (
+                {tickets.map((t) => (
                     <tr>
-                        <td>{p.name}</td>
+                        <td>{t.login}</td>
                         <td>
-                            {p.seat}
+                            {t.seat}
                         </td>
                     </tr>
                 ))}
