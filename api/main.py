@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from cassandra.cqlengine import connection
+from cassandra.cqlengine.query import BatchQuery
 from cassandra.util import uuid_from_time
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -92,8 +93,9 @@ async def get_tickets(login: str = Depends(auth)) -> list[TicketResponse]:
 async def create_ticket(
     data: ReserveRequest, login: str = Depends(auth)
 ) -> TicketResponse:
+    b = BatchQuery()
     try:
-        seat = Seat.objects.filter(train=data.train_id, seat=data.seat).get()
+        seat = Seat.objects.batch(b).filter(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
         raise HTTPException(404, "Seat not found")
 
@@ -101,12 +103,13 @@ async def create_ticket(
         raise HTTPException(400, "Seat already occupied")
 
     seat.update(occupied=True)
-    ticket = Ticket.create(
+    ticket = Ticket.batch(b).create(
         login=login,
         id=uuid_from_time(datetime.now()),
         train=data.train_id,
         seat=data.seat,
     )
+    b.execute()
 
     return TicketResponse.from_domain(ticket)
 
@@ -125,35 +128,39 @@ async def get_ticket(ticket_id: str, login: str = Depends(auth)) -> TicketRespon
 async def update_ticket(
     ticket_id: str, data: ReserveRequest, login=Depends(auth)
 ) -> TicketResponse:
+    b = BatchQuery()
     try:
-        ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
+        ticket = Ticket.objects.batch(b).filter(login=login, id=ticket_id).get()
     except Ticket.DoesNotExist:
         raise HTTPException(404, "Ticket not found")
     if ticket.train != data.train_id:
         raise HTTPException(400, "Train cannot be changed")
 
     try:
-        seat = Seat.objects.filter(train=data.train_id, seat=data.seat).get()
+        seat = Seat.objects.batch(b).filter(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
         raise HTTPException(404, "Seat not found")
     if seat.occupied:
         raise HTTPException(400, "Seat already occupied")
 
-    Seat.objects.filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
-    seat.update(occupied=True)
-    ticket.update(train=data.train_id, seat=data.seat)
+    Seat.objects.batch().filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    seat.batch(b).update(occupied=True)
+    ticket.batch(b).update(train=data.train_id, seat=data.seat)
+    b.execute()
 
     return TicketResponse.from_domain(ticket)
 
 
 @app.delete("/ticket/{ticket_id}")
 async def delete_ticket(ticket_id: str, login=Depends(auth)):
+    b = BatchQuery()
     try:
-        ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
+        ticket = Ticket.objects.batch(b).filter(login=login, id=ticket_id).get()
     except Ticket.DoesNotExist:
         raise HTTPException(404, "Ticket not found")
 
-    Seat.objects.filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
-    ticket.delete()
+    Seat.objects.batch(b).filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    ticket.batch(b).delete()
+    b.execute()
 
     return ticket_id
