@@ -7,7 +7,8 @@ import { useForm } from "react-hook-form";
 import UserProfile from "../closures/UserProfile";
 import { SEAT_URL } from "../config";
 
-export default function TicketCard({ ticketObject: trainObject, loggedIn }) {
+
+export default function TicketCard({ trainObject, loggedIn }) {
     const {
         register,
         handleSubmit,
