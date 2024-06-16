@@ -9,6 +9,11 @@ class Train(Model):
     from_station = columns.Text(required=True)
     to_station = columns.Text(required=True)
 
+class TrainLocation(Model):
+    train = columns.Integer(primary_key=True)
+    time = columns.DateTime(primary_key=True)
+    x = columns.Float(required=True)
+    y = columns.Float(required=False)
 
 class Seat(Model):
     train = columns.Integer(primary_key=True)

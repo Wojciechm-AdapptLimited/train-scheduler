@@ -22,6 +22,12 @@ erDiagram
         string from
         string to
     }
+    TRAINLOCATION {
+        int train PK
+        datetime time PK
+        float x
+        float y
+    }
 
     SEAT {
         int train PK
@@ -40,6 +46,7 @@ erDiagram
         string seat FK
     }
 
+    TRAIN ||--o{ TRAINLOCATION : at
     TRAIN ||--o{ SEAT : has
     TICKET }o--|| SEAT : for
     TICKET }o--|| TRAIN : for
