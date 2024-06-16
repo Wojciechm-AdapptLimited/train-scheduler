@@ -2,6 +2,7 @@ from datetime import datetime
 
 from cassandra.cqlengine import connection
 from cassandra.cqlengine.query import BatchQuery
+from cassandra.cluster import ExecutionProfile
 from cassandra.util import uuid_from_time
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from api.domain import Passenger, Seat, Ticket, Train
 from api.requests import ReserveRequest
 from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse, SeatDetailedResponse
+from api.connect import connect
 
 from typing import Annotated
 
@@ -20,6 +22,10 @@ connection.setup(
     default_keyspace="ttms",
     consistency=connection.ConsistencyLevel.QUORUM,
 )
+# profile = ExecutionProfile(
+#     consistency_level=connection.ConsistencyLevel.QUORUM
+# )
+# connection.set_session(connect(keyspace="ttms",profile=profile))
 
 origins = [
     "http://localhost:5173",  # React app URL
@@ -128,22 +134,22 @@ async def get_ticket(ticket_id: str, login: str = Depends(auth)) -> TicketRespon
 async def update_ticket(
     ticket_id: str, data: ReserveRequest, login=Depends(auth)
 ) -> TicketResponse:
-    b = BatchQuery()
     try:
-        ticket = Ticket.objects.batch(b).filter(login=login, id=ticket_id).get()
+        ticket = Ticket.objects(login=login, id=ticket_id).get()
     except Ticket.DoesNotExist:
         raise HTTPException(404, "Ticket not found")
     if ticket.train != data.train_id:
         raise HTTPException(400, "Train cannot be changed")
 
     try:
-        seat = Seat.objects.batch(b).filter(train=data.train_id, seat=data.seat).get()
+        seat = Seat.objects(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
         raise HTTPException(404, "Seat not found")
     if seat.occupied:
         raise HTTPException(400, "Seat already occupied")
 
-    Seat.objects.batch().filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    b = BatchQuery()
+    Seat.objects(train=ticket.train, seat=ticket.seat).batch(b).update(occupied=False)
     seat.batch(b).update(occupied=True)
     ticket.batch(b).update(train=data.train_id, seat=data.seat)
     b.execute()
@@ -153,13 +159,14 @@ async def update_ticket(
 
 @app.delete("/ticket/{ticket_id}")
 async def delete_ticket(ticket_id: str, login=Depends(auth)):
-    b = BatchQuery()
+    
     try:
-        ticket = Ticket.objects.batch(b).filter(login=login, id=ticket_id).get()
+        ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
     except Ticket.DoesNotExist:
         raise HTTPException(404, "Ticket not found")
 
-    Seat.objects.batch(b).filter(train=ticket.train, seat=ticket.seat).update(occupied=False)
+    b = BatchQuery()
+    Seat.objects(train=ticket.train, seat=ticket.seat).batch(b).update(occupied=False)
     ticket.batch(b).delete()
     b.execute()
 

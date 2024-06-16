@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 // import { Link, useParams } from 'react-router-dom';
 
-import TicketCard from "./TicketCard";
+import TrainCard from "./TrainCard";
 
 import { TRAIN_URL } from "../config";
 
@@ -25,7 +25,7 @@ export default function Home({loggedIn }) {
         <div className="column max-height">
             <ul>
                 {tickets.map((t) => (
-                    <TicketCard
+                    <TrainCard
                         trainObject={t}
                         key={t.id}
                         loggedIn={loggedIn}

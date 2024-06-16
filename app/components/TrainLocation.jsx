@@ -9,6 +9,7 @@ import "../styles.css";
 
 import { SERVER_URL,TICKET_URL,TRAIN_URL } from "../config";
 import UserProfile from "../closures/UserProfile";
+import BuyTicket from "./BuyTicket";
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -24,7 +25,7 @@ let TrainIcon = L.icon({
     popupAnchor: [0, -40],
 });
 
-export default function TrainLocation() {
+export default function TrainLocation({loggedIn}) {
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
     const [trainInfo, setTrainInfo] = useState({
@@ -36,9 +37,9 @@ export default function TrainLocation() {
     });
     const [tickets, setTickets] = useState([]);
     const { train_id } = useParams();
+    const login = UserProfile.get();
 
     const getTickets = function () {
-        const login = UserProfile.get();
         const requestOptions = {
             headers: { 
                 'Authorization': 'bearer '+login
@@ -54,57 +55,55 @@ export default function TrainLocation() {
     };
 
     const getTrain = function () {
-        //get train location from cassandra
-
         fetch(TRAIN_URL+train_id)
         .then(response => response.json())
         .then(data => {
             console.log("Train data "+data);
             setTrainInfo(data);
         })
-
-        // setTrains([
-        //     {
-        //         id: 1,
-        //         x: 54.3213,
-        //         y: 19.3214,
-        //     },
-        // ]);
     };
 
     useEffect(() => {
         getTickets();
-        //getPassangers();
         getTrain();
     }, []);
 
     return (
-        <div className="column">
-            <h2>From: {trainInfo.from_station}</h2>
-            <div>Leaves: {trainInfo.departure.toString()}</div>
-            <h2>To: {trainInfo.to_station}</h2>
-            <div>Arrives: {trainInfo.arrival.toString()}</div>
-            <div>Current Location:</div>
-            <MapContainer
-                center={location}
-                zoom={6}
-                style={{ height: "480px", width: "480px" }}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {trains.map((t) => (
-                    <Marker icon={TrainIcon} position={[t.x, t.y]}>
-                        <Popup>Train: {train_id}</Popup>
-                    </Marker>
-                ))}
-            </MapContainer>
+        <div className="row max-height">
+            <div className="column">
+                <h2>From: {trainInfo.from_station}</h2>
+                <div>Leaves: {trainInfo.departure.toString()}</div>
+                <h2>To: {trainInfo.to_station}</h2>
+                <div>Arrives: {trainInfo.arrival.toString()}</div>
+                <div>Current Location:</div>
+                <MapContainer
+                    center={location}
+                    zoom={6}
+                    style={{ height: "480px", width: "480px" }}
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    {trains.map((t) => (
+                        <Marker icon={TrainIcon} position={[t.x, t.y]}>
+                            <Popup>Train: {train_id}</Popup>
+                        </Marker>
+                    ))}
+                </MapContainer>
+            </div>
+            <div>
+                <h2>Order a ticket</h2>
+                <BuyTicket trainObject={trainInfo}>
+
+                </BuyTicket>
+            </div>
             <table>
                 <thead>
                     <tr>
                         <th>Passengers</th>
                         <th>Seats</th>
+                        <th>Operations</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,6 +111,8 @@ export default function TrainLocation() {
                         <tr>
                             <td>{t.login}</td>
                             <td>{t.seat}</td>
+                            {loggedIn && t.login === login &&
+                            <td><BuyTicket ticketObject={t} trainObject={trainInfo}></BuyTicket></td>}
                         </tr>
                     ))}
                 </tbody>

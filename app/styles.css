@@ -59,6 +59,9 @@ div.tickets{
 .max-height{
     max-height: 100%;
 }
+.wider{
+    width: 50vw;
+}
 
 .col-right{
     padding: 2%;
@@ -82,6 +85,10 @@ div.tickets{
 
 .error {
     color: red;
+}
+
+.success {
+    color: lime;
 }
 
 .text-center{
