@@ -2,20 +2,20 @@ from datetime import datetime
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import connection
 from cassandra.cqlengine.management import sync_table
-from api.domain import Train, Seat, Passenger, Ticket
+from api.domain import Train, Seat, Passenger, Ticket, TrainLocation
 
 host = "127.0.0.1"
 
 print("Connecting to cluster...")
 cluster = Cluster([(host,port) for port in range(9042,9044+1)])
 session = cluster.connect()
-
+session.default_timeout = 60
 print("Creating keyspace ttms if not exists")
 session.execute("""
     CREATE KEYSPACE IF NOT EXISTS ttms
     WITH REPLICATION = {'class':'SimpleStrategy','replication_factor':'2'}
 """)
-
+session.set_keyspace("ttms")
 connection.set_session(session)
 # connection.setup(
 #     hosts=[host],
@@ -28,6 +28,7 @@ sync_table(Train)
 sync_table(Seat)
 sync_table(Passenger)
 sync_table(Ticket)
+sync_table(TrainLocation)
 
 print("Inserting data into tables...")
 stations = ["Poznan", "Krakow"]

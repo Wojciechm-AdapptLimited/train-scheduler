@@ -7,6 +7,7 @@ import time
 import requests
 
 NUM_TRAINS = 10
+FIRST_TRAIN = 1
 
 
 class Train(abc.ABC, threading.Thread):
@@ -41,6 +42,10 @@ class Train(abc.ABC, threading.Thread):
         self.send_info(info)
 
     def start(self) -> None:
+        self.running = True
+        super(Train,self).start()
+
+    def run(self) -> None:
         i = 0
         while self.running and (self.repeats is None or i < self.repeats):
             i += 1
@@ -80,32 +85,42 @@ class PositionTrain(Train):
 class RequestTrain(PositionTrain):
     def __init__(self, train_id, max_delay=4, repeats=None):
         super(RequestTrain, self).__init__(train_id, max_delay, repeats)
-        self.url = "127.0.0.1/"
+        self.url = "http://localhost:8000/"
+        self.login = "admin"
 
     def send_info(self, info):
+        super().send_info(info)
+        x,y = info
         _ = requests.post(
-            self.url + "train/position",
-            json={"id": self.train_id, "x": info.x, "y": info.y},
+            f"{self.url}train/location/{self.train_id}",
+            json={"train_id":self.train_id,"x": x, "y": y},
+            headers={
+                "Authorization": "bearer "+self.login
+            }
         )
 
 
 def main():
-    trains = [PositionTrain(i) for i in range(NUM_TRAINS)]
+    print("creating trains")
+    trains = [RequestTrain(i) for i in range(FIRST_TRAIN,NUM_TRAINS+FIRST_TRAIN)]
 
+    print("starting trains")
     for train in trains:
         train.start()
 
+    print("train loop...")
     while True:
         try:
             time.sleep(1)
         except KeyboardInterrupt:
+            print("stopping trains...")
             for train in trains:
                 train.stop()
             break
-
+    
+    print("waiting for trains to join...")
     for train in trains:
         train.join()
-
     return 0
 
 

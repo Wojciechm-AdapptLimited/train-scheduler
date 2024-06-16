@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from api.domain import Seat, Train, Ticket
+from api.domain import Seat, Train, Ticket, TrainLocation
 
 
 class TrainResponse(BaseModel):
@@ -24,6 +24,20 @@ class TrainResponse(BaseModel):
             arrival=train.arrival,
         )
 
+class TrainLocationResponse(BaseModel):
+    train: int
+    time: datetime
+    x: float
+    y:float
+
+    @classmethod
+    def from_domain(cls, trainLocation: TrainLocation) -> "TrainLocationResponse":
+        return cls(
+            train=trainLocation.train,
+            time=trainLocation.time,
+            x=trainLocation.x,
+            y=trainLocation.y
+        )
 
 class SeatResponse(BaseModel):
     seat: str

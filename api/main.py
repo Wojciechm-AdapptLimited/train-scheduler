@@ -8,9 +8,9 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from api.domain import Passenger, Seat, Ticket, Train
-from api.requests import ReserveRequest
-from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse, SeatDetailedResponse
+from api.domain import Passenger, Seat, Ticket, Train, TrainLocation
+from api.requests import ReserveRequest, TrainLocationRequest
+from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse, SeatDetailedResponse, TrainLocationResponse
 from api.connect import connect
 
 from typing import Annotated
@@ -68,6 +68,35 @@ async def get_seats_pef_train(train_id: int) -> list[SeatDetailedResponse]:
         raise HTTPException(404, "Seats not found")
 
     return [SeatDetailedResponse.from_domain(seat) for seat in seats]
+
+
+@app.get("/train/location/{train_id}")
+async def get_train_location(train_id: int) -> list[TrainLocationResponse]:
+    try:
+        train_locs = TrainLocation.objects.filter(train=train_id).all()
+    except TrainLocation.DoesNotExist:
+        raise HTTPException(404, "No train location yet")
+
+    return [TrainLocationResponse.from_domain(train_loc) for train_loc in train_locs]
+
+
+@app.post("/train/location/{train_id}")
+async def post_train_location(
+    train_id:int, data: TrainLocationRequest, login: str = Depends(auth)
+) -> TrainLocationResponse:
+    try:
+        Train.objects(id=data.train_id).get()
+    except Train.DoesNotExist:
+        raise HTTPException(404, "No train found")
+
+    train_loc = TrainLocation.create(
+        train=train_id,
+        time=datetime.now(),
+        x=data.x,
+        y=data.y
+    )
+
+    return TrainLocationResponse.from_domain(train_loc)
 
 
 @app.get("/train")

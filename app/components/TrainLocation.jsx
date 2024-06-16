@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 
 import "../styles.css";
 
-import { SERVER_URL,TICKET_URL,TRAIN_URL } from "../config";
+import { SERVER_URL,TICKET_URL,TRAIN_URL,TRAIN_LOCATION_URL } from "../config";
 import UserProfile from "../closures/UserProfile";
 import BuyTicket from "./BuyTicket";
 
@@ -59,12 +59,23 @@ export default function TrainLocation({loggedIn}) {
         .then(response => response.json())
         .then(data => {
             console.log("Train data "+data);
+            data.seats = data.seats.filter((s)=>!s.occupied);
             setTrainInfo(data);
         })
     };
 
+    const getLocation = function(){
+        fetch(TRAIN_LOCATION_URL+train_id)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setTrains(data)
+        })
+    }
+
     useEffect(() => {
         getTickets();
+        getLocation();
         getTrain();
     }, []);
 
@@ -92,7 +103,7 @@ export default function TrainLocation({loggedIn}) {
                     ))}
                 </MapContainer>
             </div>
-            <div>
+            <div className="columns">
                 <h2>Order a ticket</h2>
                 <BuyTicket trainObject={trainInfo}>
 
