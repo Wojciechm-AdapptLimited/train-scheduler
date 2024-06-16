@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import "../styles.css";
 
 import { SERVER_URL,TICKET_URL,TRAIN_URL } from "../config";
+import UserProfile from "../closures/UserProfile";
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -27,21 +28,26 @@ export default function TrainLocation() {
     const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
     const [trains, setTrains] = useState([]);
     const [trainInfo, setTrainInfo] = useState({
-        id: 0,
+        train_id: 0,
         from_station: "",
         to_station: "",
         departure: new Date(),
         arrival: new Date(),
     });
     const [tickets, setTickets] = useState([]);
-    const { id } = useParams();
+    const { train_id } = useParams();
 
     const getTickets = function () {
-        // current format
-        fetch(TICKET_URL)
+        const login = UserProfile.get();
+        const requestOptions = {
+            headers: { 
+                'Authorization': 'bearer '+login
+            },
+        };
+        fetch(TICKET_URL,requestOptions)
         .then(response => response.json())
         .then(data => {
-            data = data.filter(t => {t.train === id})
+            data = data.filter((t) => t.train === Number(train_id));
             console.log("Ticket data "+data);
             setTickets(data);
         });
@@ -50,7 +56,7 @@ export default function TrainLocation() {
     const getTrain = function () {
         //get train location from cassandra
 
-        fetch(TRAIN_URL+id)
+        fetch(TRAIN_URL+train_id)
         .then(response => response.json())
         .then(data => {
             console.log("Train data "+data);
@@ -67,7 +73,7 @@ export default function TrainLocation() {
     };
 
     useEffect(() => {
-        //getTicket();
+        getTickets();
         //getPassangers();
         getTrain();
     }, []);
@@ -90,23 +96,25 @@ export default function TrainLocation() {
                 />
                 {trains.map((t) => (
                     <Marker icon={TrainIcon} position={[t.x, t.y]}>
-                        <Popup>Train: {id}</Popup>
+                        <Popup>Train: {train_id}</Popup>
                     </Marker>
                 ))}
             </MapContainer>
             <table>
-                <tr>
-                    <th>Passengers</th>
-                    <th>Seats</th>
-                </tr>
-                {tickets.map((t) => (
+                <thead>
                     <tr>
-                        <td>{t.login}</td>
-                        <td>
-                            {t.seat}
-                        </td>
+                        <th>Passengers</th>
+                        <th>Seats</th>
                     </tr>
-                ))}
+                </thead>
+                <tbody>
+                    {tickets.map((t) => (
+                        <tr>
+                            <td>{t.login}</td>
+                            <td>{t.seat}</td>
+                        </tr>
+                    ))}
+                </tbody>
             </table>
         </div>
     );

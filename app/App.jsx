@@ -50,7 +50,7 @@ function App() {
                             path="/"
                             element={<Tickets loggedIn={loggedIn}/>}
                         />
-                        <Route path="/train/:id" element={<TrainLocation/>} />
+                        <Route path="/train/:train_id" element={<TrainLocation/>} />
                     </Routes>
                 </section>
             </div>

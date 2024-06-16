@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 //import { Link } from 'react-router-dom';
 
 import UserProfile from "../closures/UserProfile";
-import { SEAT_URL } from "../config";
+import { SEAT_URL, TICKET_URL } from "../config";
 
 
 export default function TicketCard({ trainObject, loggedIn }) {
@@ -42,45 +42,47 @@ export default function TicketCard({ trainObject, loggedIn }) {
         });
     };
 
-    const getReservedSeat = function(){
-        fetch(SERVER_URL+`passengers/${trainObject.id}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Passangers data "+data);
-            const login = UserProfile.get();
-            const seat = data.find((p) => p.name === login);
-            if (seat){
-                setBoughtSeat(seat);
-            }
-        });
-    }
+    // const getReservedSeat = function(){
+    //     fetch(SERVER_URL+`passengers/${trainObject.id}`)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         console.log("Passangers data "+data);
+    //         const login = UserProfile.get();
+    //         const seat = data.find((p) => p.name === login);
+    //         if (seat){
+    //             setBoughtSeat(seat);
+    //         }
+    //     });
+    // }
 
     const onSubmit = (data) => {
         data.train_id = String(trainObject.id);
         const login = UserProfile.get();
-        data.user_id = login
-        if(updating){
-            data.reservation_id = String(reservationId);
-        }
+        // if(updating){
+        //     data.reservation_id = String(reservationId);
+        // }
         console.log("Form data:", data);
 
         const requestOptions = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': 'bearer '+login
+            },
             body: JSON.stringify(data)
         };
 
-        const endpoint = updating?"update":"create";
+        //const endpoint = updating?"update":"create";
 
-        fetch(SERVER_URL+"reservation/"+endpoint,requestOptions)
+        fetch(TICKET_URL,requestOptions)
         .then(response => {
             if(!response.ok) throw new Error(response.status);
             else return response.json();
         })
         .then(data => {
             console.log(data)
-            setBoughtSeat(data.seat);
-            setReservationId(data.reservation_id);
+            // setBoughtSeat(data.seat);
+            // setReservationId(data.reservation_id);
             setMessage("Success");
         })
         .catch((error) =>{

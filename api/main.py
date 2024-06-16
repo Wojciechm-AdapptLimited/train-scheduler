@@ -93,16 +93,16 @@ async def get_tickets(login: str = Depends(auth)) -> list[TicketResponse]:
 async def create_ticket(
     data: ReserveRequest, login: str = Depends(auth)
 ) -> TicketResponse:
-    b = BatchQuery()
     try:
-        seat = Seat.objects.batch(b).filter(train=data.train_id, seat=data.seat).get()
+        seat = Seat.objects(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
         raise HTTPException(404, "Seat not found")
 
     if seat.occupied:
         raise HTTPException(400, "Seat already occupied")
 
-    seat.update(occupied=True)
+    b = BatchQuery()
+    seat.batch(b).update(occupied=True)
     ticket = Ticket.batch(b).create(
         login=login,
         id=uuid_from_time(datetime.now()),
