@@ -4,35 +4,149 @@
     justify-content: center;
 }
 
+
+#root {
+    height: 100vh;
+    overflow-x: hidden;
+}
+
 header {
-background-color:seagreen;
-padding: 1% ;
-}
-
-footer {
-background-color: seagreen;
-padding: 1%;
-}
-
-body {
-    overflow: hidden;
-}
-section{
+    height: 10%;
+    background-color: seagreen;
+    padding-inline: 5%;
     display: flex;
-    overflow-y: scroll;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    a {
+        text-decoration: none;
+        color: seashell;
+    }
+
+    #login {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        color: seashell;
+
+        input {
+            color: black;
+        }
+    }
 }
 
-.main {
-height: 100vh;
+
+main {
+    height: 80%;
+    padding: 2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#trains {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    list-style-type: none;
+
+    li {
+        width: 100%;
+        margin-inline: 20%;
+        border-bottom: 1px solid rgba(46, 139, 87, 0.43);
+    }
+
+    section {
+        width: 75%;
+        padding: 2% 0;
+        margin: auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        a {
+            color: black;
+        }
+    }
+
+}
+
+#train {
+    height: 100%;
+    width: 100%;
+    padding-inline: 20%;
+    display: flex;
+    flex-direction: column;
+    gap: 5%;
+
+    #trainHeader {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        #ticketOrder {
+            width: 50%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 5%;
+        }
+    }
+
+    #trainDetails {
+        display: flex;
+        justify-content: space-between;
+
+        table {
+            border-collapse: collapse;
+            margin-inline: 10%;
+            width: 80%;
+            text-align: center;
+            table-layout: fixed;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid;
+        }
+    }
+}
+
+.trainInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    width: 50%;
+
+    p {
+        margin: 0;
+    }
+
+    h2 {
+        margin: 0;
+        margin-bottom: 2%;
+    }
 }
 
 .fill {
-justify-content: space-between;
+    justify-content: space-between;
 }
 
 .column {
-display: flex;
-flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .row {
@@ -52,34 +166,35 @@ flex-direction: column;
     padding: 10%;
 }
 
-div.tickets{
+div.tickets {
     max-height: 100%;
 }
 
-.max-height{
+.max-height {
     max-height: 100%;
 }
-.wider{
+
+.wider {
     width: 50vw;
 }
 
-.col-right{
+.col-right {
     padding: 2%;
     border-right: 1px seashell solid;
     overflow-x: scroll;
 }
 
-.col-left{
+.col-left {
     padding: 2%;
-    border-left: 1px seashell    solid;
+    border-left: 1px seashell solid;
     overflow-x: scroll;
 }
 
-.pad-2{
+.pad-2 {
     padding: 2%;
 }
 
-.shadow{
+.shadow {
     box-shadow: 10px 10px 5px silver;
 }
 
@@ -91,10 +206,10 @@ div.tickets{
     color: lime;
 }
 
-.text-center{
+.text-center {
     text-align: center;
 }
 
-.text-left{
+.text-left {
     text-align: left;
 }

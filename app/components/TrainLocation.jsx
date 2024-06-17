@@ -7,127 +7,58 @@ import { useParams } from 'react-router-dom';
 
 import "../styles.css";
 
-import { SERVER_URL,TICKET_URL,TRAIN_URL,TRAIN_LOCATION_URL } from "../config";
+import { TRAIN_URL } from "../config";
 import UserProfile from "../closures/UserProfile";
-import BuyTicket from "./BuyTicket";
 
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    iconSize: [25, 41], // size of the icon
-    iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
-    popupAnchor: [0, -40], // point from which the popup should open relative to the iconAnchor
+const DefaultIcon = L.icon({
+  iconUrl: icon,
+  iconSize: [25, 41], // size of the icon
+  iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, -40], // point from which the popup should open relative to the iconAnchor
 });
 
-let TrainIcon = L.icon({
-    iconUrl: trainIcon,
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -40],
+const TrainIcon = L.icon({
+  iconUrl: trainIcon,
+  iconSize: [36, 36],
+  iconAnchor: [18, 36],
+  popupAnchor: [0, -40],
 });
 
-export default function TrainLocation({loggedIn}) {
-    const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
-    const [trains, setTrains] = useState([]);
-    const [trainInfo, setTrainInfo] = useState({
-        train_id: 0,
-        from_station: "",
-        to_station: "",
-        departure: new Date(),
-        arrival: new Date(),
-    });
-    const [tickets, setTickets] = useState([]);
-    const { train_id } = useParams();
-    const login = UserProfile.get();
+export default function TrainLocation({ trainId }) {
+  const [location, setLocation] = useState([52.3246, 18.9967]); //default location - center of poland
+  const [trains, setTrains] = useState([]);
 
-    const getTickets = function () {
-        const requestOptions = {
-            headers: { 
-                'Authorization': 'bearer '+login
-            },
-        };
-        fetch(TICKET_URL,requestOptions)
-        .then(response => response.json())
-        .then(data => {
-            data = data.filter((t) => t.train === Number(train_id));
-            console.log("Ticket data "+data);
-            setTickets(data);
-        });
-    };
+  const getLocation = function() {
+    fetch(TRAIN_URL + trainId + "/location")
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setTrains(data)
+      });
+  }
 
-    const getTrain = function () {
-        fetch(TRAIN_URL+train_id)
-        .then(response => response.json())
-        .then(data => {
-            console.log("Train data "+data);
-            data.seats = data.seats.filter((s)=>!s.occupied);
-            setTrainInfo(data);
-        })
-    };
+  useEffect(() => {
+    getLocation();
+  }, []);
 
-    const getLocation = function(){
-        fetch(TRAIN_LOCATION_URL+train_id)
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            setTrains(data)
-        })
-    }
-
-    useEffect(() => {
-        getTickets();
-        getLocation();
-        getTrain();
-    }, []);
-
-    return (
-        <div className="row max-height">
-            <div className="column">
-                <h2>From: {trainInfo.from_station}</h2>
-                <div>Leaves: {trainInfo.departure.toString()}</div>
-                <h2>To: {trainInfo.to_station}</h2>
-                <div>Arrives: {trainInfo.arrival.toString()}</div>
-                <div>Current Location:</div>
-                <MapContainer
-                    center={location}
-                    zoom={6}
-                    style={{ height: "480px", width: "480px" }}
-                >
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    {trains.map((t) => (
-                        <Marker icon={TrainIcon} position={[t.x, t.y]}>
-                            <Popup>Train: {train_id}</Popup>
-                        </Marker>
-                    ))}
-                </MapContainer>
-            </div>
-            <div className="columns">
-                <h2>Order a ticket</h2>
-                <BuyTicket trainObject={trainInfo}>
-
-                </BuyTicket>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Passengers</th>
-                        <th>Seats</th>
-                        <th>Operations</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {tickets.map((t) => (
-                        <tr>
-                            <td>{t.login}</td>
-                            <td>{t.seat}</td>
-                            {loggedIn && t.login === login &&
-                            <td><BuyTicket ticketObject={t} trainObject={trainInfo}></BuyTicket></td>}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+  return (
+    <div className="column">
+      <h3>Current Location:</h3>
+      <MapContainer
+        center={location}
+        zoom={6}
+        style={{ height: "480px", width: "480px" }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {trains.map((t) => (
+          <Marker icon={TrainIcon} position={[t.x, t.y]}>
+            <Popup>Train: {trainId}</Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  );
 }
