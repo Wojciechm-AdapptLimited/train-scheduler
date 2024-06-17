@@ -43,7 +43,7 @@ class Train(abc.ABC, threading.Thread):
 
     def start(self) -> None:
         self.running = True
-        super(Train,self).start()
+        super(Train, self).start()
 
     def run(self) -> None:
         i = 0
@@ -90,19 +90,17 @@ class RequestTrain(PositionTrain):
 
     def send_info(self, info):
         super().send_info(info)
-        x,y = info
+        x, y = info
         _ = requests.post(
             f"{self.url}train/location/{self.train_id}",
-            json={"train_id":self.train_id,"x": x, "y": y},
-            headers={
-                "Authorization": "bearer "+self.login
-            }
+            json={"train_id": self.train_id, "x": x, "y": y},
+            headers={"Authorization": "bearer " + self.login},
         )
 
 
 def main():
     print("creating trains")
-    trains = [RequestTrain(i) for i in range(FIRST_TRAIN,NUM_TRAINS+FIRST_TRAIN)]
+    trains = [RequestTrain(i) for i in range(FIRST_TRAIN, NUM_TRAINS + FIRST_TRAIN)]
 
     print("starting trains")
     for train in trains:
@@ -117,7 +115,7 @@ def main():
             for train in trains:
                 train.stop()
             break
-    
+
     print("waiting for trains to join...")
     for train in trains:
         train.join()

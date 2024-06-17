@@ -10,7 +10,11 @@ python = "^3.12"
 fastapi = "^0.111.0"
 numpy = "^1.26.4"
 cassandra-driver = "^3.29.1"
+requests = "^2.32.3"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
 
 [build-system]
 requires = ["poetry-core"]

@@ -116,7 +116,6 @@ async def get_tickets(login: str = Depends(auth)) -> list[TicketResponse]:
 async def create_ticket(
     data: ReserveRequest, login: str = Depends(auth)
 ) -> TicketResponse:
-    print(data)
     try:
         seat = Seat.objects(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
