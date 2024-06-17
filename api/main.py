@@ -2,18 +2,18 @@ from datetime import datetime
 
 from cassandra.cqlengine import connection
 from cassandra.cqlengine.query import BatchQuery
-from cassandra.cluster import ExecutionProfile
 from cassandra.util import uuid_from_time
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
 from api.domain import Passenger, Seat, Ticket, Train, TrainLocation
 from api.requests import ReserveRequest, TrainLocationRequest
-from api.responses import TicketResponse, TrainDetailedResponse, TrainResponse, SeatDetailedResponse, TrainLocationResponse
-from api.connect import connect
-
-from typing import Annotated
+from api.responses import (
+    SeatResponse,
+    TicketResponse,
+    TrainLocationResponse,
+    TrainResponse,
+)
 
 app = FastAPI()
 auth = OAuth2PasswordBearer(tokenUrl="login")
@@ -22,10 +22,7 @@ connection.setup(
     default_keyspace="ttms",
     consistency=connection.ConsistencyLevel.QUORUM,
 )
-# profile = ExecutionProfile(
-#     consistency_level=connection.ConsistencyLevel.QUORUM
-# )
-# connection.set_session(connect(keyspace="ttms",profile=profile))
+
 
 origins = [
     "http://localhost:5173",  # React app URL
@@ -46,31 +43,41 @@ async def root():
 
 
 @app.post("/login")
-async def login(login: Annotated[str, Depends(auth)]):
-    if login != "admin":
-        n = Passenger.objects.filter(login=login).count()
-        if n <= 0:# if no account, register
-            Passenger.create(login=login)
-            #raise HTTPException(400, "Invalid credentials")
-    return {"access_token": login, "token_type": "bearer"}
+async def login(login: OAuth2PasswordRequestForm = Depends()):
+    if (
+        login.username != "admin"
+        or Passenger.objects.filter(login=login.username).count() <= 0
+    ):
+        Passenger.create(login=login.username)
+    return {"access_token": login.username, "token_type": "bearer"}
 
 
-@app.get("/seat")
-async def get_seats() -> list[SeatDetailedResponse]:
-    return [SeatDetailedResponse.from_domain(seat) for seat in Seat.objects.all()]
+@app.get("/train")
+async def get_trains() -> list[TrainResponse]:
+    return [TrainResponse.from_domain(train) for train in Train.objects.all()]
 
 
-@app.get("/seat/{train_id}")
-async def get_seats_pef_train(train_id: int) -> list[SeatDetailedResponse]:
+@app.get("/train/{train_id}")
+async def get_train(train_id: int) -> TrainResponse:
+    try:
+        train = Train.objects.filter(id=train_id).get()
+    except Train.DoesNotExist:
+        raise HTTPException(404, "Train not found")
+
+    return TrainResponse.from_domain(train)
+
+
+@app.get("/train/{train_id}/seat")
+async def get_seats(train_id: int) -> list[SeatResponse]:
     try:
         seats = Seat.objects.filter(train=train_id).all()
     except Seat.DoesNotExist:
-        raise HTTPException(404, "Seats not found")
+        raise HTTPException(404, "Trai  not found")
 
-    return [SeatDetailedResponse.from_domain(seat) for seat in seats]
+    return [SeatResponse.from_domain(seat) for seat in seats]
 
 
-@app.get("/train/location/{train_id}")
+@app.get("/train/{train_id}/location")
 async def get_train_location(train_id: int) -> list[TrainLocationResponse]:
     try:
         train_locs = TrainLocation.objects.filter(train=train_id).all()
@@ -80,9 +87,9 @@ async def get_train_location(train_id: int) -> list[TrainLocationResponse]:
     return [TrainLocationResponse.from_domain(train_loc) for train_loc in train_locs]
 
 
-@app.post("/train/location/{train_id}")
+@app.post("/train/{train_id}/location")
 async def post_train_location(
-    train_id:int, data: TrainLocationRequest, login: str = Depends(auth)
+    train_id: int, data: TrainLocationRequest
 ) -> TrainLocationResponse:
     try:
         Train.objects(id=data.train_id).get()
@@ -90,29 +97,10 @@ async def post_train_location(
         raise HTTPException(404, "No train found")
 
     train_loc = TrainLocation.create(
-        train=train_id,
-        time=datetime.now(),
-        x=data.x,
-        y=data.y
+        train=train_id, time=datetime.now(), x=data.x, y=data.y
     )
 
     return TrainLocationResponse.from_domain(train_loc)
-
-
-@app.get("/train")
-async def get_trains() -> list[TrainResponse]:
-    return [TrainResponse.from_domain(train) for train in Train.objects.all()]
-
-
-@app.get("/train/{train_id}")
-async def get_train(train_id: int) -> TrainDetailedResponse:
-    try:
-        train = Train.objects.filter(id=train_id).get()
-    except Train.DoesNotExist:
-        raise HTTPException(404, "Train not found")
-
-    seats = Seat.objects.filter(train=train_id).all()
-    return TrainDetailedResponse.from_domain(train, seats)
 
 
 @app.get("/ticket")
@@ -128,6 +116,7 @@ async def get_tickets(login: str = Depends(auth)) -> list[TicketResponse]:
 async def create_ticket(
     data: ReserveRequest, login: str = Depends(auth)
 ) -> TicketResponse:
+    print(data)
     try:
         seat = Seat.objects(train=data.train_id, seat=data.seat).get()
     except Seat.DoesNotExist:
@@ -188,7 +177,6 @@ async def update_ticket(
 
 @app.delete("/ticket/{ticket_id}")
 async def delete_ticket(ticket_id: str, login=Depends(auth)):
-    
     try:
         ticket = Ticket.objects.filter(login=login, id=ticket_id).get()
     except Ticket.DoesNotExist:

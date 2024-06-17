@@ -24,11 +24,12 @@ class TrainResponse(BaseModel):
             arrival=train.arrival,
         )
 
+
 class TrainLocationResponse(BaseModel):
     train: int
     time: datetime
     x: float
-    y:float
+    y: float
 
     @classmethod
     def from_domain(cls, trainLocation: TrainLocation) -> "TrainLocationResponse":
@@ -36,37 +37,17 @@ class TrainLocationResponse(BaseModel):
             train=trainLocation.train,
             time=trainLocation.time,
             x=trainLocation.x,
-            y=trainLocation.y
+            y=trainLocation.y,
         )
+
 
 class SeatResponse(BaseModel):
     seat: str
     occupied: bool
 
-class SeatDetailedResponse(SeatResponse):
-    train: int
-
     @classmethod
-    def from_domain(cls, seat: Seat) -> "SeatDetailedResponse":
-        return cls(
-            seat=seat.seat,
-            occupied=seat.occupied,
-            train=seat.train
-        )
-
-
-class TrainDetailedResponse(TrainResponse):
-    seats: list[SeatResponse]
-
-    @classmethod
-    def from_domain(cls, train: Train, seats: list[Seat]) -> "TrainDetailedResponse":
-        train_rsp = TrainResponse.from_domain(train)
-        return cls(
-            **train_rsp.model_dump(),
-            seats=[
-                SeatResponse(seat=seat.seat, occupied=seat.occupied) for seat in seats
-            ]
-        )
+    def from_domain(cls, seat: Seat) -> "SeatResponse":
+        return cls(seat=seat.seat, occupied=seat.occupied)
 
 
 class TicketResponse(BaseModel):
